@@ -1,0 +1,8 @@
+INTRO DE RE-ANIMATOR INTEGRADA · v3.2.6
+
+- El archivo trailer-reanimator.mp4 está incluido en la aplicación.
+- Se reproduce automáticamente antes de la narración cuando la opción de vídeo de introducción está activada.
+- El audio ha sido reforzado y normalizado para mejorar claramente el volumen del original.
+- Al terminar el vídeo, la aplicación inicia automáticamente el narrador seleccionado en la pantalla principal.
+- Se puede saltar la introducción con el botón de la pantalla de vídeo.
+- Desde el menú se puede cargar temporalmente otro vídeo; al restaurar, vuelve el tráiler integrado.
