@@ -1,4 +1,4 @@
-const CACHE="lm-narrador-v3.2.20-audiofix";
+const CACHE="lm-narrador-v3.2.24-director-folds";
 const SHELL=["./","index.html","manifest.webmanifest","assets/icon-192.png","assets/icon-512.png","assets/apple-touch-icon.png","assets/logo-ludoteca-maldita-oficial.png","assets/reanimator-portada-escenario.png","assets/trailer-reanimator.mp4","assets/reanimator-narracion-comienzo.mp3","assets/bso-reanimator.m4a"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
