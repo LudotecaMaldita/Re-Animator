@@ -220,5 +220,9 @@
     syncNarratorMusicButton();
   });
   setInterval(syncNarratorMusicButton,600);
+  // Ocultar exclusivamente el botón Atrás en el modo Narración.
+  const backStyle=document.createElement("style");
+  backStyle.textContent='body.mode-narrator #backBtn,body.mode-narrator #appBackBtn,body.mode-narrator .app-back-btn{display:none!important}';
+  document.head.appendChild(backStyle);
   window.LMEpicFlow={choice,epic,stopHost};
 })();
