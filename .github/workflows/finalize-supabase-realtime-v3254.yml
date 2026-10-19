@@ -1,0 +1,26 @@
+name: Finalize Supabase Realtime v3.2.54
+on:
+  push:
+    paths:
+      - ".github/workflows/finalize-supabase-realtime-v3254.yml"
+permissions:
+  contents: write
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upgrade and validate Supabase library and reconnect
+        run: python scripts/upgrade-realtime-v3254.py
+      - name: Commit upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Version already installed"
+            exit 0
+          fi
+          git commit -m "Finalize Supabase Realtime v3.2.54"
+          git pull --rebase origin main
+          git push
