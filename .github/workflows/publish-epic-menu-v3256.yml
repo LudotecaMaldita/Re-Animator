@@ -1,0 +1,71 @@
+name: Publish scenario and epic access menu v3.2.56
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-epic-menu-v3256.yml"
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Integrate the new scenario menu
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+          assert "const APP_VERSION=\"3.2.55\";" in c, "Se esperaba partir de v3.2.55"
+          assert "window.LMEpicRealtime=LMEpicRealtime" in c
+          assert "epic-supabase-transport.js?v=3.2.54" in c
+          assert "function playSplashIntroVideo(" in c
+          assert "function showGameMenu(" in c
+          assert "function startSplashOpeningNarration(" in c
+          assert "id=\"splashNarratorBtn\"" in c
+          assert "id=\"splashDirectorBtn\"" in c
+          assert "id=\"splashScreenBtn\"" in c
+          assert "id=\"publicTableChoices\"" in c
+          assert Path("epic-mode-flow-v3256.js").exists()
+          c=c.replace("const APP_VERSION=\"3.2.55\";","const APP_VERSION=\"3.2.56\";",1)
+          c=c.replace("<span>v3.2.55 · Fanmade · Ludoteca Maldita</span>","<span>v3.2.56 · Fanmade · Ludoteca Maldita</span>",1)
+          c=c.replace("Aplicación v3.2.55<br>","Aplicación v3.2.56<br>",1)
+          script='<script src="epic-mode-flow-v3256.js?v=3.2.56"></script>'
+          assert script not in c
+          assert c.count("</body>")==1
+          c=c.replace("</body>",script+"\n</body>",1)
+          p.write_text(c,encoding="utf-8")
+      - name: Validate app scripts and preserve previous features
+        shell: python
+        run: |
+          import re, subprocess, tempfile
+          from pathlib import Path
+          c=Path("index.html").read_text(encoding="utf-8")
+          s=Path("epic-mode-flow-v3256.js").read_text(encoding="utf-8")
+          assert 'const APP_VERSION="3.2.56"' in c
+          assert 'function resetEpicProgressOnAppLaunch(' in c
+          assert 'epic-supabase-transport.js?v=3.2.54' in c
+          assert 'lm-epic-lobby-v3256:' in s
+          assert 'PIN="15041981"' in s
+          assert '🎙 Narración del Escenario' in s
+          assert '🎲 Multijugador Épico' in s
+          assert '🎩 Director' in s and '🎲 Jugador' in s
+          assert 'on("presence"' in s
+          for i,script in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',c,re.S|re.I)):
+            if not script.strip():continue
+            f=Path(tempfile.gettempdir())/f"ludo-v3256-{i}.js"
+            f.write_text(script,encoding="utf-8")
+            subprocess.run(["node","--check",str(f)],check=True)
+          subprocess.run(["node","--check","epic-mode-flow-v3256.js"],check=True)
+          subprocess.run(["node","--check","epic-supabase-transport.js"],check=True)
+          print("v3.2.56: syntactic validation passed, Epic and QR components preserved")
+      - name: Commit the new menu
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Integrate narration and epic mode selection after intro"
+          git pull --rebase origin main
+          git push
