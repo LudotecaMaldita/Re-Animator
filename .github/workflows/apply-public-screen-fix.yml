@@ -1,0 +1,92 @@
+name: Apply public screen tab fix
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-public-screen-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+
+          btn='<button id="openScreenBtn" class="ghost compact" type="button">📺 Abrir pantalla pública ↗</button>'
+          if 'id="sharePublicBtn"' not in c:
+              if btn not in c:
+                  raise SystemExit("No se encontró openScreenBtn")
+              c=c.replace(btn, btn+'\n      <button id="sharePublicBtn" class="ghost compact" type="button">🔗 QR y enlaces</button>', 1)
+
+          old='''async function openPublicScreenWindow(){
+            let room="";
+            try{room=await window.LMEpicRealtime?.ensureHost?.()||""}catch(e){console.warn(e);toast("No se pudo iniciar la conexión online. Comprueba Internet e inténtalo de nuevo.");return}
+            renderPublicSharePanel(room);
+          }'''
+          new='''async function ensurePublicRoom(){
+            try{return await window.LMEpicRealtime?.ensureHost?.()||""}
+            catch(e){console.warn(e);toast("No se pudo iniciar la conexión online. Comprueba Internet e inténtalo de nuevo.");return null}
+          }
+          async function openPublicScreenWindow(){
+            const popup=window.open("about:blank","_blank");
+            if(popup){
+              try{
+                popup.document.title="Ludoteca Maldita · Abriendo pantalla pública";
+                popup.document.body.innerHTML='<div style="font-family:system-ui,sans-serif;background:#111;color:#fff;min-height:100vh;display:grid;place-items:center;margin:0;text-align:center;padding:24px"><div><div style="font-size:42px">📺</div><h1 style="font-size:22px">Abriendo pantalla pública…</h1><p style="opacity:.75">Conectando con el Director Épico.</p></div></div>';
+              }catch(e){}
+            }
+            const room=await ensurePublicRoom();
+            if(room===null){try{popup?.close()}catch(e){}return}
+            const url=buildPublicAccessUrl(room);
+            if(popup){
+              try{popup.opener=null}catch(e){}
+              popup.location.replace(url);
+            }else{
+              toast("El navegador ha bloqueado la nueva pestaña. Permite ventanas emergentes para esta página.");
+              renderPublicSharePanel(room);
+            }
+          }
+          async function openPublicSharePanel(){
+            const room=await ensurePublicRoom();
+            if(room===null)return;
+            renderPublicSharePanel(room);
+          }'''
+          if old in c:
+              c=c.replace(old,new,1)
+          elif 'async function ensurePublicRoom()' not in c:
+              raise SystemExit("No se encontró la función openPublicScreenWindow esperada")
+
+          close='byId("publicShareCloseBtn")?.addEventListener("click",()=>byId("publicShareOverlay")?.classList.add("hidden"));'
+          add='byId("sharePublicBtn")?.addEventListener("click",openPublicSharePanel);'
+          if add not in c:
+              if close not in c:
+                  raise SystemExit("No se encontró publicShareCloseBtn")
+              c=c.replace(close,add+'\n'+close,1)
+
+          marker=' · Fanmade · Ludoteca Maldita</span>'
+          i=c.find(marker)
+          if i>=0:
+              s=c.rfind('<span>v',0,i)
+              if s>=0:
+                  c=c[:s]+'<span>v3.2.51'+c[i:]
+
+          p.write_text(c,encoding="utf-8")
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Open public screen in a new tab"
+          git push
