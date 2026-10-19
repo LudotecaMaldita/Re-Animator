@@ -176,5 +176,25 @@
   for(const id of ["newEventBtn","closeEventBtn"])$(id)?.addEventListener("click",()=>setTimeout(updateHost,200));
   window.addEventListener("pagehide",()=>{stopWatch();stopHost()},{once:true});
   if(new URLSearchParams(location.search).get("mode")==="director"){history.replaceState(null,"",location.pathname);setMode("narrator");showGameMenu()}
+  // La Novia del Re-Animator permanecerá cerrada hasta su lanzamiento.
+  const brideCard=document.querySelector('[data-splash-scenario="bride"]');
+  if(brideCard){
+    brideCard.disabled=true;
+    brideCard.classList.remove("active");
+    brideCard.setAttribute("aria-disabled","true");
+    brideCard.setAttribute("title","PRÓXIMAMENTE");
+    brideCard.querySelector("span")?.replaceChildren(document.createTextNode("PRÓXIMAMENTE"));
+    const ribbon=document.createElement("span");
+    ribbon.className="lm-bride-soon";
+    ribbon.textContent="PRÓXIMAMENTE";
+    brideCard.appendChild(ribbon);
+    const style=document.createElement("style");
+    style.textContent='.game-scenario[data-splash-scenario="bride"]{position:relative;opacity:.58;filter:grayscale(.65);cursor:not-allowed!important;pointer-events:none;border-color:#68745f!important}.lm-bride-soon{display:block!important;margin-top:8px!important;padding:5px 8px!important;background:#203224;color:#b5f28a!important;font-size:.77rem!important;font-weight:900!important;letter-spacing:.09em;border-radius:6px;text-align:center}';
+    document.head.appendChild(style);
+  }
+  // Impedir el inicio del escenario bloqueado aunque se hubiera guardado anteriormente.
+  if(typeof splashScenario!=="undefined"&&splashScenario==="bride"){
+    splashScenario="west";renderSplashScenario();
+  }
   window.LMEpicFlow={choice,epic,stopHost};
 })();
