@@ -1,0 +1,39 @@
+name: Reset Director PIN access on exit v3.2.56
+on:
+  push:
+    paths:
+      - ".github/workflows/reset-director-access-v3256.yml"
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear admin access when leaving Director
+        shell: python
+        run: |
+          from pathlib import Path
+          import subprocess
+          p=Path("epic-mode-flow-v3256.js")
+          c=p.read_text(encoding="utf8")
+          before='if(ev.target.closest?.("#openGameMenuBtn")){hide();stopHost()}'
+          after='if(ev.target.closest?.("#openGameMenuBtn")){auth=false;hide();stopHost()}'
+          if before in c:c=c.replace(before,after,1)
+          elif after not in c:raise SystemExit("No se encontró el manejador del menú")
+          before2='  for(const id of ["newEventBtn","closeEventBtn"])'
+          replace2='  document.addEventListener("click",ev=>{if(ev.target.closest?.("#modeNarratorBtn")){auth=false;stopHost()}},true);\n  for(const id of ["newEventBtn","closeEventBtn"])'
+          if before2 in c:c=c.replace(before2,replace2,1)
+          elif 'if(ev.target.closest?.("#modeNarratorBtn"))' not in c:raise SystemExit("No se encontró el panel de modos")
+          p.write_text(c,encoding="utf8")
+          subprocess.run(["node","--check",str(p)],check=True)
+          print("PASS: PIN se solicita nuevamente al regresar al Director")
+      - name: Publish fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add epic-mode-flow-v3256.js
+          if git diff --cached --quiet;then exit 0;fi
+          git commit -m "Require Director PIN on every new entry"
+          git pull --rebase origin main
+          git push
