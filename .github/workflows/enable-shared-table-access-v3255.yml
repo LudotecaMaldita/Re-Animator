@@ -1,0 +1,81 @@
+name: Enable shared access to epic tables v3.2.55
+on:
+  push:
+    paths:
+      - ".github/workflows/enable-shared-table-access-v3255.yml"
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Allow multiple players and reentry
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, subprocess, tempfile
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+
+          assert 'const APP_VERSION="3.2.54";' in c, "Se esperaba v3.2.54"
+          assert 'epic-supabase-transport.js?v=3.2.54' in c, "Falta Supabase"
+
+          restriction='if(tableById(id).finished)return replyError(conn,\`La Mesa \${id} ya está finalizada.\`);if(tableOccupied(id,conn.peer))return replyError(conn,\`La Mesa \${id} ya está conectada desde otro dispositivo.\`);'
+          assert c.count(restriction)==1, "Restricción de ocupación no encontrada"
+          c=c.replace(restriction,"",1)
+
+          occupied='function tableOccupied(id,exceptPeer=""){for(const [pid,x] of peers){if(pid!==exceptPeer&&Number(x.tableId)===Number(id)&&x.conn?.open)return true}return false}'
+          assert c.count(occupied)==1
+          c=c.replace(occupied,"",1)
+
+          old='const busy=!!occ[t.id],unavailable=busy||t.finished;return\`<button class="public-table-choice" data-table="\${t.id}" type="button" \${unavailable?"disabled":""}>Mesa \${t.id}<small>\${t.finished?"Finalizada":busy?"Conectada":"Disponible"}</small></button>\`'
+          new='const busy=!!occ[t.id];return\`<button class="public-table-choice" data-table="\${t.id}" type="button">Mesa \${t.id}<small>\${t.finished?"Finalizada · solo consulta":busy?"Acceso compartido · entrar":"Disponible · entrar"}</small></button>\`'
+          assert c.count(old)==1, "Selector público de mesas no encontrado"
+          c=c.replace(old,new,1)
+
+          # Liberar estados pendientes al recuperar la conexión con el Director.
+          old_open='conn.on("open",()=>{clientReady=true;status('
+          new_open='conn.on("open",()=>{clientReady=true;setPublicPending(false);status('
+          assert c.count(old_open)==1
+          c=c.replace(old_open,new_open,1)
+          old_lost='const lost=()=>{clientReady=false;setPlayerConnection("Sin conexión · reconectando",false);'
+          new_lost='const lost=()=>{clientReady=false;directClaimAttempted=false;setPlayerConnection("Sin conexión · reconectando",false);'
+          assert c.count(old_lost)==1
+          c=c.replace(old_lost,new_lost,1)
+
+          # Conservar la prohibición de acciones de juego sobre mesas finalizadas.
+          assert 't.finished||t.stages[s.id]' in c
+          assert 'fin.disabled=t.finished' in c
+          assert 'aid.disabled=t.finished' in c
+          assert 'ensureOpenEvent();if(t.finished)' in c
+
+          c=c.replace('const APP_VERSION="3.2.54";','const APP_VERSION="3.2.55";',1)
+          c=c.replace('<span>v3.2.54 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.55 · Fanmade · Ludoteca Maldita</span>',1)
+          c=c.replace('Aplicación v3.2.54<br>','Aplicación v3.2.55<br>',1)
+
+          assert "tableOccupied(" not in c
+          assert "ya está conectada desde otro dispositivo" not in c
+          assert "Acceso compartido · entrar" in c
+          assert 'const APP_VERSION="3.2.55"' in c
+          assert "Los Hitos y las Crisis se aplican globalmente" in c
+          p.write_text(c,encoding="utf-8")
+          for i,script in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',c,re.I|re.S)):
+              if not script.strip():continue
+              path=Path(tempfile.gettempdir())/f"ludo-shared-{i}.js"
+              path.write_text(script,encoding="utf-8")
+              subprocess.run(["node","--check",str(path)],check=True)
+          print("PASS v3.2.55 shared access and JS syntax")
+
+      - name: Commit and publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Already up to date"
+            exit 0
+          fi
+          git commit -m "Allow unlimited reentry and shared access to epic tables"
+          git pull --rebase origin main
+          git push
