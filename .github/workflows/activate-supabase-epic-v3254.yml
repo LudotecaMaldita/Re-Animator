@@ -1,0 +1,79 @@
+name: Activate Supabase epic multiplayer v3.2.54
+
+on:
+  push:
+    paths:
+      - ".github/workflows/activate-supabase-epic-v3254.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Switch to Supabase WebSocket transport
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+          peer='<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>'
+          supa='<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="./epic-supabase-transport.js"></script>'
+          if peer in c:
+              c=c.replace(peer,supa,1)
+          elif supa not in c:
+              raise SystemExit("No se encontró la librería de sincronización previa")
+          if not Path("epic-supabase-transport.js").is_file():
+              raise SystemExit("Falta el nuevo transporte de Supabase")
+
+          # Tras reconectar, reclamar automáticamente la mesa que seguía abierta.
+          old='setPlayerConnection("Conectada al Director",true);send(conn,{type:"request_state"})});'
+          new='setPlayerConnection("Conectada al Director",true);send(conn,{type:"request_state"});if(publicAssignedTable)send(conn,{type:"claim_table",tableId:publicAssignedTable})});'
+          if old in c:
+              c=c.replace(old,new,1)
+          elif new not in c:
+              raise SystemExit("No se encontró el manejador de reconexión de mesa")
+
+          c=c.replace('const APP_VERSION="3.2.53";','const APP_VERSION="3.2.54";',1)
+          c=c.replace('<span>v3.2.53 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.54 · Fanmade · Ludoteca Maldita</span>',1)
+          c=c.replace('Aplicación v3.2.53','Aplicación v3.2.54',1)
+
+          p.write_text(c,encoding="utf-8")
+
+      - name: Validate build
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, subprocess, tempfile
+          c=Path("index.html").read_text(encoding="utf-8")
+          assert 'const APP_VERSION="3.2.54";' in c
+          assert 'src="./epic-supabase-transport.js"' in c
+          assert 'cdn.jsdelivr.net/npm/peerjs' not in c
+          assert 'if(publicAssignedTable)send(conn,{type:"claim_table",tableId:publicAssignedTable})' in c
+          assert 'body.mode-screen:not(.table-client) .event-director-only>.tables-panel{display:none!important}' in c
+          # La comprobación detecta JavaScript roto antes de publicar el commit.
+          subprocess.run(["node","--check","epic-supabase-transport.js"],check=True)
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',c,re.S|re.I)
+          for i,script in enumerate(scripts):
+              if script.strip():
+                  f=Path(tempfile.gettempdir())/f"lm-check-{i}.js"
+                  f.write_text(script,encoding="utf-8")
+                  subprocess.run(["node","--check",str(f)],check=True)
+          assert len(c)>7_000_000
+          assert c.count("assets/")>50
+
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes necessary"
+            exit 0
+          fi
+          git commit -m "Activate Supabase Realtime for cross-device epic tables"
+          git push
