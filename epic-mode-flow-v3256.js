@@ -116,7 +116,12 @@
     });
   }
   async function updateHost(){
-    if(hostChannel)await hostChannel.track({role:"director",room:hostRoom,scenario:scenarioId,closed:!!directorState?.closed,eventName:directorState?.eventName||"Re-Animator",startedAt:Date.now()});
+    if(!hostChannel)return;
+    const s=directorState;
+    const started=!!s?.timer?.running||(Number(s?.timer?.remaining)<Number(s?.durationMin)*60&&!s?.timer?.expired);
+    if(auth&&document.body.classList.contains("mode-director")&&!s?.closed&&started){
+      await hostChannel.track({role:"director",room:hostRoom,scenario:scenarioId,closed:false,eventName:s.eventName||"Re-Animator",startedAt:Date.now()});
+    }else await hostChannel.untrack();
   }
   async function player(){
     phase="player";show();const box=render("Acceder como Jugador","Solo puedes entrar cuando un Director mantenga una partida activa de este escenario.");
@@ -131,7 +136,7 @@
       if(watchChannel!==c||phase!=="player")return;
       const active=new Map();
       Object.values(c.presenceState()).flat().forEach(p=>{
-        if(p?.role==="director"&&!p.closed&&/^lm-[a-z0-9]{16,100}$/i.test(p.room||""))
+        if(p?.role==="director"&&!p.closed&&p.scenario===scenarioId&&/^lm-[a-z0-9]{16,100}$/i.test(p.room||"")&&Date.now()-Number(p.startedAt||0)<30000)
           active.set(p.room,p.eventName||"Partida épica");
       });
       list.replaceChildren();status.textContent=active.size?`${active.size} partida(s) disponible(s).`:(ready?"No hay partidas activas. Espera a que un Director inicie una.":"Buscando partidas…");
@@ -149,6 +154,19 @@
       else if(["CHANNEL_ERROR","TIMED_OUT","CLOSED"].includes(result)){list.replaceChildren();status.textContent="No se puede consultar el Director. "+(err?.message||"Comprueba Internet.")}
     });
   }
+  // Los jugadores únicamente ven la partida cuando el Director la ha iniciado.
+  const previousSaveDirector=saveDirector;
+  saveDirector=function(...args){
+    const result=previousSaveDirector(...args);
+    if(hostChannel)setTimeout(()=>updateHost().catch(console.warn),0);
+    return result;
+  };
+  const previousShowGameMenu=showGameMenu;
+  showGameMenu=function(...args){
+    auth=false;
+    stopHost();
+    return previousShowGameMenu(...args);
+  };
   // Bloquear la navegación antigua al Director sin PIN y cerrar lobby al abandonar el modo.
   document.addEventListener("click",ev=>{
     if(ev.target.closest?.("#modeDirectorBtn")&&!auth){ev.preventDefault();ev.stopImmediatePropagation();show();epic();directorPin()}
