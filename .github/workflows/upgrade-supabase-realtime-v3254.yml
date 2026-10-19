@@ -1,0 +1,25 @@
+name: Upgrade Re-Animator to Supabase Realtime v3.2.54
+on:
+  push:
+    paths:
+      - ".github/workflows/upgrade-supabase-realtime-v3254.yml"
+permissions:
+  contents: write
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace PeerJS with Supabase transport
+        run: python scripts/upgrade-realtime-v3254.py
+      - name: Commit validated upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Already up to date"
+            exit 0
+          fi
+          git commit -m "Use Supabase Realtime for epic Director and tables"
+          git push
