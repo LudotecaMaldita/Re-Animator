@@ -1,0 +1,159 @@
+name: Apply public dashboard syringe v3.2.53
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-public-dashboard-syringe-v3253.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch index.html
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+
+          css=r'''
+          /* ===== Pantalla pública general simplificada + jeringuilla de reactivo · v3.2.53 ===== */
+          body.mode-screen:not(.table-client) .scenario-panel{display:none!important}
+          body.mode-screen:not(.table-client) .event-director-only{
+            grid-template-columns:.95fr 1.25fr 1.05fr!important;
+            grid-template-rows:minmax(190px,.9fr) minmax(220px,1.1fr)!important;
+            gap:9px!important;
+          }
+          body.mode-screen:not(.table-client) .event-director-only>.timer-panel{grid-column:1!important;grid-row:1!important}
+          body.mode-screen:not(.table-client) .event-director-only>.outcome-panel{grid-column:1!important;grid-row:2!important}
+          body.mode-screen:not(.table-client) .event-director-only>.global-panel{grid-column:2!important;grid-row:1/3!important}
+          body.mode-screen:not(.table-client) .event-director-only>.announcement-panel{grid-column:3!important;grid-row:1/3!important}
+          body.mode-screen:not(.table-client) .event-director-only>.tables-panel{display:none!important}
+          body.mode-screen:not(.table-client) .timer-panel .panel-pad{height:100%;display:flex;flex-direction:column;justify-content:center}
+          body.mode-screen:not(.table-client) .timer-bar{
+            position:relative;
+            width:min(330px,calc(100% - 78px));
+            height:30px;
+            margin:15px 44px 5px 36px;
+            overflow:visible;
+            border:2px solid rgba(239,224,185,.78);
+            border-radius:5px;
+            background:
+              repeating-linear-gradient(90deg,transparent 0 28px,rgba(239,224,185,.16) 28px 29px),
+              linear-gradient(180deg,rgba(33,38,31,.92),rgba(8,10,8,.95));
+            box-shadow:inset 0 0 9px rgba(0,0,0,.6),0 0 12px rgba(0,0,0,.28);
+          }
+          body.mode-screen:not(.table-client) .timer-bar::before{
+            content:"";
+            position:absolute;
+            left:-34px;
+            top:50%;
+            width:29px;
+            height:16px;
+            transform:translateY(-50%);
+            border:2px solid rgba(239,224,185,.78);
+            border-right:0;
+            border-radius:5px 0 0 5px;
+            background:linear-gradient(180deg,#242720,#0d0f0c);
+            box-shadow:-7px 0 0 -3px #d8c98f;
+          }
+          body.mode-screen:not(.table-client) .timer-bar::after{
+            content:"";
+            position:absolute;
+            right:-47px;
+            top:50%;
+            width:45px;
+            height:2px;
+            transform:translateY(-50%);
+            background:linear-gradient(90deg,#d8c98f 0 35%,#f2ead1 35% 100%);
+            box-shadow:0 0 5px rgba(239,224,185,.45);
+          }
+          body.mode-screen:not(.table-client) .timer-bar span{
+            position:absolute;
+            top:2px;
+            right:2px;
+            bottom:2px;
+            height:auto!important;
+            border-radius:2px;
+            overflow:hidden;
+            background:linear-gradient(90deg,#226d2b 0%,#50e84d 48%,#9cff68 100%)!important;
+            box-shadow:0 0 13px rgba(91,255,77,.55),inset 0 0 7px rgba(255,255,255,.2);
+            transition:width .8s linear!important;
+          }
+          body.mode-screen:not(.table-client) .timer-bar span::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:radial-gradient(circle at 20% 35%,rgba(230,255,212,.7) 0 2px,transparent 3px),radial-gradient(circle at 65% 68%,rgba(230,255,212,.45) 0 1.5px,transparent 2.5px);
+            opacity:.75;
+          }
+          body.mode-screen:not(.table-client) .timer-bar span::after{
+            content:"";
+            position:absolute;
+            inset:-2px -45%;
+            background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.3) 49%,transparent 63%);
+            animation:lmSyringeShimmer 2.2s linear infinite;
+          }
+          @keyframes lmSyringeShimmer{from{transform:translateX(-45%)}to{transform:translateX(45%)}}
+          @media(max-height:800px){
+            body.mode-screen:not(.table-client) .event-director-only{grid-template-rows:minmax(155px,.8fr) minmax(180px,1fr)!important}
+            body.mode-screen:not(.table-client) .timer-bar{height:25px;margin-top:10px}
+          }
+          '''
+
+          marker='/* Director: acordeón de una sección + barra rápida */'
+          if 'Pantalla pública general simplificada + jeringuilla de reactivo · v3.2.53' not in c:
+              if marker not in c:
+                  raise SystemExit("No se encontró el marcador CSS")
+              c=c.replace(marker,css+"\n"+marker,1)
+
+          old='function renderOutcome(){const o=computeOutcome();byId("outcomeTitle").textContent=o.title;byId("outcomeText").textContent=`${o.text} Puntuación: ${o.p} de ${o.max}. Mesas finalizadas: ${directorState.tables.filter(t=>t.finished).length} de ${directorState.M}.`;byId("outcomeBadge").textContent=directorState.closed?"Final":"Provisional";byId("outcomeConditions").innerHTML=o.conditions.map(c=>`<div class="condition ${c.ok?"ok":"fail"}"><span>${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></div>`).join("");byId("closeEventBtn").disabled=directorState.closed}'
+          new='function renderOutcome(){const o=computeOutcome(),publicGeneral=document.body.classList.contains("mode-screen")&&!document.body.classList.contains("table-client");byId("outcomeTitle").textContent=o.title;byId("outcomeText").textContent=publicGeneral?`${o.text} Puntuación: ${o.p} de ${o.max}.`:`${o.text} Puntuación: ${o.p} de ${o.max}. Mesas finalizadas: ${directorState.tables.filter(t=>t.finished).length} de ${directorState.M}.`;byId("outcomeBadge").textContent=directorState.closed?"Final":"Provisional";byId("outcomeConditions").innerHTML=o.conditions.map(c=>`<div class="condition ${c.ok?"ok":"fail"}"><span>${c.ok?"✓":"✕"}</span><span>${esc(c.text)}</span></div>`).join("");byId("closeEventBtn").disabled=directorState.closed}'
+          if old in c:
+              c=c.replace(old,new,1)
+          elif 'publicGeneral=document.body.classList.contains("mode-screen")' not in c:
+              raise SystemExit("No se encontró renderOutcome esperado")
+
+          c=c.replace('const APP_VERSION="3.2.52";','const APP_VERSION="3.2.53";',1)
+          c=c.replace('<span>v3.2.52 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.53 · Fanmade · Ludoteca Maldita</span>',1)
+          c=c.replace('Aplicación v3.2.44<br>','Aplicación v3.2.53<br>',1)
+
+          p.write_text(c,encoding="utf-8")
+
+      - name: Validate patch
+        shell: python
+        run: |
+          from pathlib import Path
+          import re, subprocess, tempfile
+
+          c=Path("index.html").read_text(encoding="utf-8")
+          assert 'const APP_VERSION="3.2.53";' in c
+          assert 'body.mode-screen:not(.table-client) .event-director-only>.tables-panel{display:none!important}' in c
+          assert 'lmSyringeShimmer' in c
+          assert 'publicGeneral=document.body.classList.contains("mode-screen")' in c
+
+          scripts=re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',c,re.S|re.I)
+          for i,s in enumerate(scripts):
+              if not s.strip():
+                  continue
+              f=Path(tempfile.gettempdir())/f"lm-v3253-{i}.js"
+              f.write_text(s,encoding="utf-8")
+              subprocess.run(["node","--check",str(f)],check=True)
+
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Simplify public dashboard and add syringe timer"
+          git push
