@@ -21,7 +21,7 @@ jobs:
           assert 'const APP_VERSION="3.2.54";' in c, "Se esperaba v3.2.54"
           assert 'epic-supabase-transport.js?v=3.2.54' in c, "Falta Supabase"
 
-          restriction='if(tableById(id).finished)return replyError(conn,\`La Mesa \${id} ya está finalizada.\`);if(tableOccupied(id,conn.peer))return replyError(conn,\`La Mesa \${id} ya está conectada desde otro dispositivo.\`);'
+          restriction='if(tableById(id).finished)return replyError(conn,`La Mesa ${id} ya está finalizada.`);if(tableOccupied(id,conn.peer))return replyError(conn,`La Mesa ${id} ya está conectada desde otro dispositivo.`);'
           assert c.count(restriction)==1, "Restricción de ocupación no encontrada"
           c=c.replace(restriction,"",1)
 
@@ -29,8 +29,8 @@ jobs:
           assert c.count(occupied)==1
           c=c.replace(occupied,"",1)
 
-          old='const busy=!!occ[t.id],unavailable=busy||t.finished;return\`<button class="public-table-choice" data-table="\${t.id}" type="button" \${unavailable?"disabled":""}>Mesa \${t.id}<small>\${t.finished?"Finalizada":busy?"Conectada":"Disponible"}</small></button>\`'
-          new='const busy=!!occ[t.id];return\`<button class="public-table-choice" data-table="\${t.id}" type="button">Mesa \${t.id}<small>\${t.finished?"Finalizada · solo consulta":busy?"Acceso compartido · entrar":"Disponible · entrar"}</small></button>\`'
+          old='const busy=!!occ[t.id],unavailable=busy||t.finished;return`<button class="public-table-choice" data-table="${t.id}" type="button" ${unavailable?"disabled":""}>Mesa ${t.id}<small>${t.finished?"Finalizada":busy?"Conectada":"Disponible"}</small></button>`'
+          new='const busy=!!occ[t.id];return`<button class="public-table-choice" data-table="${t.id}" type="button">Mesa ${t.id}<small>${t.finished?"Finalizada · solo consulta":busy?"Acceso compartido · entrar":"Disponible · entrar"}</small></button>`'
           assert c.count(old)==1, "Selector público de mesas no encontrado"
           c=c.replace(old,new,1)
 
