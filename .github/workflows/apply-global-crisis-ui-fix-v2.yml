@@ -1,0 +1,88 @@
+name: Apply global crises player UI fix v2
+
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-global-crisis-ui-fix-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p=Path("index.html")
+          c=p.read_text(encoding="utf-8")
+
+          block='<div class="public-player-block"><h3>Marcadores y Crisis pendientes</h3><div id="publicMarkerButtons" class="public-player-actions"></div><p id="publicCrisisHint" class="public-player-note"></p></div>'
+          if block in c:
+              c=c.replace(block,"",1)
+
+          rx=re.compile(r'\n\s*const mb=byId\("publicMarkerButtons"\);mb\.innerHTML=.*?byId\("publicCrisisHint"\)\.textContent=.*?;\n',re.S)
+          c,_=rx.subn('\n',c,count=1)
+
+          old='''function addCrisisToActiveTables(i){
+            activeTables().forEach(t=>{
+              if(!Array.isArray(t.pendingCrises))t.pendingCrises=[];
+              if(!Array.isArray(t.resolvedCrises))t.resolvedCrises=[];
+              if(!t.pendingCrises.includes(i)&&!t.resolvedCrises.includes(i))t.pendingCrises.push(i);
+            });
+          }'''
+          new='''function addCrisisToActiveTables(i){
+            const crisis=epic().crises[i-1];
+            activeTables().forEach(t=>{
+              if(!Array.isArray(t.pendingCrises))t.pendingCrises=[];
+              if(!Array.isArray(t.resolvedCrises))t.resolvedCrises=[];
+              t.pendingCrises=t.pendingCrises.filter(x=>Number(x)!==Number(i));
+              if(!t.resolvedCrises.includes(i))t.resolvedCrises.push(i);
+              if(crisis?.blocksAid)t.aidBlocked=true;
+            });
+          }'''
+          if old in c:
+              c=c.replace(old,new,1)
+          elif new not in c:
+              raise SystemExit("No se encontró la lógica de Crisis esperada")
+
+          old_actions='case"marker":return applyMarkerRemote(t,Number(msg.which));case"crisis":return applyCrisisRemote(t);'
+          new_actions='case"marker":case"crisis":throw new Error("Los Hitos y las Crisis se aplican globalmente a todas las mesas.");'
+          if old_actions in c:
+              c=c.replace(old_actions,new_actions,1)
+          elif new_actions not in c:
+              raise SystemExit("No se encontró el manejador remoto esperado")
+
+          c=c.replace('const APP_VERSION="3.2.49";','const APP_VERSION="3.2.52";',1)
+          c=c.replace('<span>v3.2.51 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.52 · Fanmade · Ludoteca Maldita</span>',1)
+
+          p.write_text(c,encoding="utf-8")
+
+      - name: Validate patch
+        shell: python
+        run: |
+          from pathlib import Path
+          c=Path("index.html").read_text(encoding="utf-8")
+          assert 'id="publicMarkerButtons"' not in c
+          assert 'id="publicCrisisHint"' not in c
+          assert '<div class="public-player-block"><h3>Marcadores y Crisis pendientes</h3>' not in c
+          assert 'Los Hitos y las Crisis se aplican globalmente a todas las mesas.' in c
+          assert 'const APP_VERSION="3.2.52";' in c
+          assert '<span>v3.2.52 · Fanmade · Ludoteca Maldita</span>' in c
+
+      - name: Commit change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Hide player marker controls and apply crises globally"
+          git push
