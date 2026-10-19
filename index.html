@@ -545,7 +545,7 @@ body.mode-screen.table-client{overflow:auto!important}.mode-screen.table-client 
     <div id="splashHint" class="game-splash-hint" style="display: block;">El laboratorio de West vuelve a encenderse. La app abrirá el escenario en el modo elegido.</div>
     <div class="game-bottom">
       <label class="game-narrate-toggle"><input id="splashNarrate" type="checkbox" checked=""> Narrar la entrada al escenario</label>
-      <span>v3.2.50 · Fanmade · Ludoteca Maldita</span>
+      <span>v3.2.51 · Fanmade · Ludoteca Maldita</span>
     </div>
   </div>
 </div>
@@ -574,6 +574,7 @@ body.mode-screen.table-client{overflow:auto!important}.mode-screen.table-client 
       <button id="openGameMenuBtn" class="ghost compact menu-open-btn" type="button">⌂ Inicio</button>
       <button id="fullscreenBtn" class="ghost compact" type="button">Pantalla completa</button>
       <button id="openScreenBtn" class="ghost compact" type="button">📺 Abrir pantalla pública ↗</button>
+      <button id="sharePublicBtn" class="ghost compact" type="button">🔗 QR y enlaces</button>
     </div>
   </header>
 
@@ -2466,11 +2467,35 @@ function renderPublicSharePanel(room){
   });
   overlay.classList.remove("hidden");
 }
+async function ensurePublicRoom(){
+  try{return await window.LMEpicRealtime?.ensureHost?.()||""}
+  catch(e){console.warn(e);toast("No se pudo iniciar la conexión online. Comprueba Internet e inténtalo de nuevo.");return null}
+}
 async function openPublicScreenWindow(){
-  let room="";
-  try{room=await window.LMEpicRealtime?.ensureHost?.()||""}catch(e){console.warn(e);toast("No se pudo iniciar la conexión online. Comprueba Internet e inténtalo de nuevo.");return}
+  const popup=window.open("about:blank","_blank");
+  if(popup){
+    try{
+      popup.document.title="Ludoteca Maldita · Abriendo pantalla pública";
+      popup.document.body.innerHTML='<div style="font-family:system-ui,sans-serif;background:#111;color:#fff;min-height:100vh;display:grid;place-items:center;margin:0;text-align:center;padding:24px"><div><div style="font-size:42px">📺</div><h1 style="font-size:22px">Abriendo pantalla pública…</h1><p style="opacity:.75">Conectando con el Director Épico.</p></div></div>';
+    }catch(e){}
+  }
+  const room=await ensurePublicRoom();
+  if(room===null){try{popup?.close()}catch(e){}return}
+  const url=buildPublicAccessUrl(room);
+  if(popup){
+    try{popup.opener=null}catch(e){}
+    popup.location.replace(url);
+  }else{
+    toast("El navegador ha bloqueado la nueva pestaña. Permite ventanas emergentes para esta página.");
+    renderPublicSharePanel(room);
+  }
+}
+async function openPublicSharePanel(){
+  const room=await ensurePublicRoom();
+  if(room===null)return;
   renderPublicSharePanel(room);
 }
+byId("sharePublicBtn")?.addEventListener("click",openPublicSharePanel);
 byId("publicShareCloseBtn")?.addEventListener("click",()=>byId("publicShareOverlay")?.classList.add("hidden"));
 byId("publicShareOverlay")?.addEventListener("click",e=>{if(e.target===byId("publicShareOverlay"))byId("publicShareOverlay").classList.add("hidden")});
 byId("modeNarratorBtn").onclick=()=>navigateAppMode("narrator");byId("modeDirectorBtn").onclick=()=>navigateAppMode("director");byId("modeScreenBtn").onclick=openPublicScreenWindow;
