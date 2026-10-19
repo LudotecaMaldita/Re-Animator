@@ -1,0 +1,53 @@
+name: Apply new scenario navigation v3.2.56
+on:
+  push:
+    paths:
+      - ".github/workflows/apply-new-scenario-navigation-v3256.yml"
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply navigation and validate
+        shell: python
+        run: |
+          from pathlib import Path
+          import re,subprocess,tempfile
+          p=Path('index.html')
+          c=p.read_text(encoding='utf-8')
+          assert 'const APP_VERSION="3.2.55";' in c, "Expected stable version v3.2.55"
+          assert 'epic-supabase-transport.js?v=3.2.54' in c, "Missing multiplayer transport"
+          assert 'if(tableOccupied(id,conn.peer))' not in c, "Multi-user table regression"
+          assert Path('epic-mode-menu-v3256.js').exists()
+          assert Path('epic-mode-menu-v3256.css').exists()
+          c=c.replace('</head>','<link rel="stylesheet" href="epic-mode-menu-v3256.css?v=3.2.56">\n</head>',1)
+          c=c.replace('</body></html>','<script src="epic-mode-menu-v3256.js?v=3.2.56"></script>\n</body></html>',1)
+          c=c.replace('const APP_VERSION="3.2.55";','const APP_VERSION="3.2.56";',1)
+          c=c.replace('<span>v3.2.55 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.56 · Fanmade · Ludoteca Maldita</span>',1)
+          c=c.replace('Aplicación v3.2.55<br>','Aplicación v3.2.56<br>',1)
+          # Los enlaces QR mode=screen mantienen el acceso directo. No aceptar mode=director mediante URL.
+          old='setMode(["narrator","director","screen"].includes(requestedMode)?requestedMode:"narrator");'
+          assert old in c, "Expected startup mode guard"
+          c=c.replace(old,'setMode(requestedMode==="screen"?"screen":"narrator");',1)
+          p.write_text(c,encoding='utf-8')
+          assert 'const APP_VERSION="3.2.56"' in c
+          assert 'body.mode-screen:not(.table-client) .event-director-only>.tables-panel' in c
+          assert 'Los Hitos y las Crisis se aplican globalmente' in c
+          for i,script in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',c,re.S|re.I)):
+              if not script.strip():continue
+              f=Path(tempfile.gettempdir())/f'lm-v3256-inline-{i}.js'
+              f.write_text(script,encoding='utf8')
+              subprocess.run(['node','--check',str(f)],check=True)
+          subprocess.run(['node','--check','epic-mode-menu-v3256.js'],check=True)
+          subprocess.run(['node','--check','epic-supabase-transport.js'],check=True)
+          print('PASS v3.2.56 · HTML + scripts + Supabase transport')
+      - name: Commit upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add narrator epic director PIN and active game player menu"
+          git pull --rebase origin main
+          git push
