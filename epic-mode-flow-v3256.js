@@ -198,12 +198,14 @@
   }
 
   // Control independiente de BSO para Narración del Escenario.
-  const musicButton=node("button","lm-narration-music");
+  const musicButton=node("button","ghost compact lm-narration-music");
   musicButton.type="button";
   musicButton.id="lmNarrationMusicToggle";
   musicButton.setAttribute("aria-label","Activar o desactivar música de fondo");
-  musicButton.style.cssText="position:fixed;right:16px;bottom:16px;z-index:2100;padding:13px 17px;border-radius:12px;background:#182b1a;border:1px solid #9bd579;color:#f1f7e9;font:800 14px system-ui;box-shadow:0 5px 22px #0008;cursor:pointer;display:none;";
-  document.body.appendChild(musicButton);
+  musicButton.style.display="none";
+  const toolbar=document.querySelector(".topbar .top-actions");
+  const fullscreenButton=document.getElementById("fullscreenBtn");
+  if(toolbar){if(fullscreenButton)fullscreenButton.insertAdjacentElement("afterend",musicButton);else toolbar.appendChild(musicButton);}
   function syncNarratorMusicButton(){
     const showNarrator=document.body.classList.contains("mode-narrator")&&!document.body.classList.contains("game-menu-open")&&overlay.classList.contains("hidden");
     musicButton.style.display=showNarrator?"block":"none";
