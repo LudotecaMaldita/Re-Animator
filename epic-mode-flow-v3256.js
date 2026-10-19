@@ -170,8 +170,9 @@
   // Bloquear la navegación antigua al Director sin PIN y cerrar lobby al abandonar el modo.
   document.addEventListener("click",ev=>{
     if(ev.target.closest?.("#modeDirectorBtn")&&!auth){ev.preventDefault();ev.stopImmediatePropagation();show();epic();directorPin()}
-    if(ev.target.closest?.("#openGameMenuBtn")){hide();stopHost()}
+    if(ev.target.closest?.("#openGameMenuBtn")){auth=false;hide();stopHost()}
   },true);
+  document.addEventListener("click",ev=>{if(ev.target.closest?.("#modeNarratorBtn")){auth=false;stopHost()}},true);
   for(const id of ["newEventBtn","closeEventBtn"])$(id)?.addEventListener("click",()=>setTimeout(updateHost,200));
   window.addEventListener("pagehide",()=>{stopWatch();stopHost()},{once:true});
   if(new URLSearchParams(location.search).get("mode")==="director"){history.replaceState(null,"",location.pathname);setMode("narrator");showGameMenu()}
