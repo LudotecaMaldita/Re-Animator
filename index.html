@@ -1157,8 +1157,8 @@ window.addEventListener("load",()=>{
 window.addEventListener("pageshow",()=>setTimeout(closeAllAppDisclosures,0));
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./epic-supabase-transport.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+<script src="epic-supabase-transport.js?v=3.2.54"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 "use strict";
@@ -2404,9 +2404,9 @@ function exportCsv(){const stageIds=epic().stages.map(s=>s.id),extraIds=epic().e
 function importJson(file){const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);if(p.scenarioId!==scenarioId)throw new Error("El archivo pertenece a otro escenario.");if(!validateDirector(p))throw new Error("Formato no válido.");if(!confirm(`Importar evento de ${p.M} mesas?`))return;snapshotDirector();directorState=p;saveDirector();renderDirector();toast("Evento importado.")}catch(e){alert("No se pudo importar: "+e.message)}};r.readAsText(file)}
 
 
-/* ===== DIRECTO ÉPICO ONLINE · Mesas P2P + QR v3.2.50 =====
-   GitHub Pages es estático. PeerJS se usa únicamente para señalización y crea
-   canales WebRTC entre el Director y cada mesa. El Director conserva el estado canónico. */
+/* ===== DIRECTOR ÉPICO ONLINE · Supabase Realtime + QR v3.2.54 =====
+   Supabase transporta los mensajes entre todas las redes mediante WebSockets.
+   Hitos, Crisis, Dosis y resultados los calcula el Director de forma canónica. */
 const LMEpicRealtime=(()=>{
   let peer=null,hostId="",isHost=false,hostReady=null,clientConn=null,clientReady=false,publicAssignedTable=null,directClaimAttempted=false;
   const peers=new Map();
@@ -2457,7 +2457,7 @@ const LMEpicRealtime=(()=>{
       isHost=true;peer=new Peer(undefined,{debug:0});
       const timeout=setTimeout(()=>{if(!hostId){try{peer?.destroy()}catch(e){};hostReady=null;isHost=false;reject(new Error("No se pudo contactar con el servicio de conexión."))}},12000);
       peer.on("open",id=>{clearTimeout(timeout);hostId=id;peer.on("connection",attachHostConnection);resolve(id)});
-      peer.on("error",e=>{console.warn("PeerJS host",e);if(!hostId){clearTimeout(timeout);hostReady=null;isHost=false;reject(e)}});
+      peer.on("error",e=>{console.warn("Supabase Realtime host",e);if(!hostId){clearTimeout(timeout);hostReady=null;isHost=false;reject(e)}});
       peer.on("disconnected",()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
     });return hostReady;
   }
@@ -2472,17 +2472,17 @@ const LMEpicRealtime=(()=>{
     }
   }
   function attachClientConnection(conn){
-    clientConn=conn;conn.on("open",()=>{clientReady=true;status(requestedTable()?`Conectado. Accediendo a Mesa ${requestedTable()}…`:"Conectado. Elige tu mesa.","ok");setPlayerConnection("Conectada al Director",true);send(conn,{type:"request_state"});if(publicAssignedTable)send(conn,{type:"claim_table",tableId:publicAssignedTable})});
+    clientConn=conn;conn.on("open",()=>{clientReady=true;status(requestedTable()?`Conectado. Accediendo a Mesa ${requestedTable()}…`:"Conectado. Elige tu mesa.","ok");setPlayerConnection("Conectada al Director",true);if(publicAssignedTable)send(conn,{type:"claim_table",tableId:publicAssignedTable});send(conn,{type:"request_state"});if(publicAssignedTable)send(conn,{type:"claim_table",tableId:publicAssignedTable})});
     conn.on("data",msg=>{if(!msg||typeof msg!=="object")return;if(msg.type==="state")return updateClientState(msg);if(msg.type==="presence")return renderPublicChooser(msg.occupancy||{});if(msg.type==="claimed"){publicAssignedTable=Number(msg.tableId);document.body.classList.add("table-client");byId("publicTableGate")?.classList.add("hidden");renderPublicPlayer();toast(`Conectado como Mesa ${publicAssignedTable}.`);return}if(msg.type==="error"){toast(msg.message||"No se pudo registrar la acción.");if(!publicAssignedTable&&requestedTable()){status(`${msg.message||"No se pudo entrar en esa mesa."} Elige otra mesa disponible.`,"error");byId("publicTableGate")?.classList.remove("hidden")}renderPublicPlayer();return}if(msg.type==="action_ok"){setPublicPending(false);return}});
     const lost=()=>{clientReady=false;setPlayerConnection("Sin conexión · reconectando",false);status("Se ha perdido la conexión con el Director.","error");setPublicPending(true)};conn.on("close",lost);conn.on("error",lost);
   }
   function connectClient(){
     const room=requestedRoom();if(!publicMode()||!room)return;
     byId("publicTableGate")?.classList.remove("hidden");status("Conectando con el Director…","");
-    if(typeof Peer!=="function"){status("No se pudo cargar la conexión online. Revisa Internet y recarga.","error");return}
+    if(typeof Peer!=="function"){status("No se pudo cargar Supabase Realtime. Comprueba Internet o la red y recarga.","error");return}
     peer=new Peer(undefined,{debug:0});
     peer.on("open",()=>{const conn=peer.connect(room,{serialization:"json",reliable:true,metadata:{role:"table",scenarioId}});attachClientConnection(conn)});
-    peer.on("error",e=>{console.warn("PeerJS client",e);status("No se pudo conectar con el Director. Comprueba que su pantalla siga abierta.","error");setPlayerConnection("Sin conexión",false)});
+    peer.on("error",e=>{console.warn("Supabase Realtime client",e);status(String(e?.message||"No se pudo conectar con el Director."),"error");setPlayerConnection("Sin conexión",false)});
     peer.on("disconnected",()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
   }
   function claimTable(id){if(!clientConn?.open)return toast("Todavía no hay conexión con el Director.");send(clientConn,{type:"claim_table",tableId:Number(id)})}
