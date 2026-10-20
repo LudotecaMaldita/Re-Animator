@@ -431,3 +431,21 @@ html body.mode-screen:not(.table-client) .global-panel .list-title{
    display:none!important;visibility:hidden!important;
  }
 }
+
+/* Ajuste octubre 2026: títulos de la pantalla general más discretos.
+   Solo afecta a la proyección; no modifica Director ni jugadores. */
+html body.mode-screen:not(.table-client) .outcome-panel :is(h2,h3){
+  font-size:clamp(20px,1.55vw,29px)!important;
+  line-height:1.18!important;
+}
+html body.mode-screen:not(.table-client) .timer-panel .panel-pad :is(h2,h3),
+html body.mode-screen:not(.table-client) .timer-panel .panel-pad > .eyebrow{
+  font-size:clamp(20px,1.5vw,28px)!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  width:100%!important;
+}
+html body.mode-screen:not(.table-client) .global-panel :is(h3,h4,.section-title,.list-title){
+  font-size:clamp(18px,1.3vw,24px)!important;
+  line-height:1.2!important;
+}
