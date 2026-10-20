@@ -1,0 +1,20 @@
+name: Diagnose public DOM and script links
+on:
+  push:
+    paths: [".github/workflows/diagnose-public-dom-v3259.yml"]
+permissions: {contents: read}
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print public selectors
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          for term in ('Evento preparado','Comunicado Global','announcement-panel','announcementTitle','public-screen-layout-v3257.css','</body></html>'):
+            print('===',term)
+            for m in list(re.finditer(re.escape(term),t,re.I))[:4]:
+              print(t[max(0,m.start()-220):m.end()+320].replace('\\n',' '))
