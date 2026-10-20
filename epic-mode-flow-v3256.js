@@ -229,5 +229,57 @@
   const backStyle=document.createElement("style");
   backStyle.textContent='body.mode-narrator #backBtn,body.mode-narrator #appBackBtn,body.mode-narrator .app-back-btn{display:none!important}';
   document.head.appendChild(backStyle);
+  // Director v3.2.61: este es el script cargado por index.html.
+  // No se aplica a mode=screen ni a la pantalla pública congelada.
+  const layoutStyle=document.createElement('style');
+  layoutStyle.textContent=`
+    body.mode-director .mode-panel,
+    body.mode-director #directorQuickbar{display:none!important}
+    body.mode-director:not(.lm-epic-created) main>.scenario-panel,
+    body.mode-director:not(.lm-epic-created) main>.audio-only,
+    body.mode-director:not(.lm-epic-created) main>.event-director-only:not(#directorQuickbar)>:not(.event-setup-panel){display:none!important}
+    body.mode-director.lm-epic-created .event-setup-panel,
+    body.mode-director.lm-epic-created main>.scenario-panel,
+    body.mode-director.lm-epic-created main>.audio-only,
+    body.mode-director.lm-epic-created .timer-panel{display:none!important}
+    body.mode-director main>.event-director-only:not(#directorQuickbar){
+      display:flex!important;flex-direction:column!important;gap:14px!important;
+    }
+    body.mode-director main>.event-director-only:not(#directorQuickbar)>section{
+      width:100%!important;max-width:none!important;box-sizing:border-box!important;
+    }
+  `;
+  document.head.appendChild(layoutStyle);
+  function directorLayout(){
+    const mode=document.body.classList.contains('mode-director');
+    if(!mode){document.body.classList.remove('lm-epic-created');return}
+    const created=document.body.dataset.lmEpicCreated==='yes';
+    document.body.classList.toggle('lm-epic-created',created);
+    const parent=document.querySelector('main>.event-director-only:not(#directorQuickbar)');
+    if(!parent)return;
+    const selectors=[
+      '.tables-panel','.report-panel','.global-panel','.announcement-panel','.outcome-panel'
+    ];
+    if(created){
+      const panels=selectors.map(s=>parent.querySelector(':scope > '+s)).filter(Boolean);
+      const original=panels.filter(n=>n.parentElement===parent);
+      if(original.length===panels.length){
+        const positions=original.map(node=>{const mark=document.createComment('director-order');parent.insertBefore(mark,node);return mark});
+        panels.forEach((node,i)=>positions[i].replaceWith(node));
+      }
+    }
+  }
+  document.getElementById('newEventBtn')?.addEventListener('click',()=>{
+    setTimeout(()=>{
+      if(!directorState?.closed)document.body.dataset.lmEpicCreated='yes';
+      directorLayout();
+      updateHost().catch(console.warn);
+    },350);
+  });
+  document.getElementById('closeEventBtn')?.addEventListener('click',()=>{
+    document.body.dataset.lmEpicCreated='no';directorLayout();
+  });
+  setInterval(directorLayout,800);
+  directorLayout();
   window.LMEpicFlow={choice,epic,stopHost};
 })();
