@@ -224,3 +224,11 @@ body.mode-screen:not(.table-client) .global-panel .metric-card strong{
     min-height:0!important;height:auto!important;
   }
 }
+
+/* Encabezados centrados para proyección: Resultado Épico y Estado Global. */
+body.mode-screen:not(.table-client) .outcome-panel .eyebrow,
+body.mode-screen:not(.table-client) .outcome-panel h2,
+body.mode-screen:not(.table-client) .global-panel .eyebrow,
+body.mode-screen:not(.table-client) .global-panel h2{
+  text-align:center!important;
+}
