@@ -71,7 +71,7 @@
     phase="epic";show();
     const box=render("Multijugador Épico","Los Directores gestionan el evento y las mesas envían sus informes.");
     button(box,"🎩 Director","Acceso protegido con PIN.",directorPin);
-    button(box,"🎲 Jugador","Solo partidas de Director activas y conectadas.",player,true);
+    button(box,"🎲 Jugador","Eventos creados con un Director conectado.",player,true);
     goBack("← Elegir modo",choice);
   }
   function directorPin(){
@@ -85,7 +85,7 @@
       ev.preventDefault();if(input.value!==PIN){warning.textContent="PIN incorrecto.";input.value="";input.focus();return}
       auth=true;submit.disabled=true;warning.textContent="Publicando partida en Supabase…";
       try{
-        setMode("director");localStorage.setItem(`${BASE_STORE}.mode`,"director");
+        document.body.dataset.lmEpicCreated="no";setMode("director");localStorage.setItem(`${BASE_STORE}.mode`,"director");
         const room=await window.LMEpicRealtime.ensureHost();if(!room)throw new Error("El Director no dispone de sala online.");
         await advertise(room);hide();window.LMIntegratedBso?.afterIntro(scenarioId);
         setTimeout(()=>startSplashOpeningNarration(scenarioId),180);
@@ -118,13 +118,13 @@
   async function updateHost(){
     if(!hostChannel)return;
     const s=directorState;
-    const started=!!s?.timer?.running||(Number(s?.timer?.remaining)<Number(s?.durationMin)*60&&!s?.timer?.expired);
+    const started=document.body.dataset.lmEpicCreated==='yes';
     if(auth&&document.body.classList.contains("mode-director")&&!s?.closed&&started){
       await hostChannel.track({role:"director",room:hostRoom,scenario:scenarioId,closed:false,eventName:s.eventName||"Re-Animator",startedAt:Date.now()});
     }else await hostChannel.untrack();
   }
   async function player(){
-    phase="player";show();const box=render("Acceder como Jugador","Solo puedes entrar cuando un Director mantenga una partida activa de este escenario.");
+    phase="player";show();const box=render("Acceder como Jugador","Puedes entrar en cuanto el Director haya creado el evento, sin esperar al temporizador.");
     const status=node("div","lm-v3256-status","Buscando partidas conectadas…");box.appendChild(status);
     const list=node("div","lm-v3256-stack");box.appendChild(list);
     goBack("← Multijugador Épico",()=>{stopWatch();epic()});
@@ -173,7 +173,12 @@
     if(ev.target.closest?.("#openGameMenuBtn")){auth=false;hide();stopHost()}
   },true);
   document.addEventListener("click",ev=>{if(ev.target.closest?.("#modeNarratorBtn")){auth=false;stopHost()}},true);
-  for(const id of ["newEventBtn","closeEventBtn"])$(id)?.addEventListener("click",()=>setTimeout(updateHost,200));
+  $("newEventBtn")?.addEventListener("click",()=>setTimeout(()=>{
+    if(!directorState?.closed){document.body.dataset.lmEpicCreated="yes";updateHost().catch(console.warn);}
+  },250));
+  $("closeEventBtn")?.addEventListener("click",()=>{
+    document.body.dataset.lmEpicCreated="no";setTimeout(()=>updateHost().catch(console.warn),200);
+  });
   window.addEventListener("pagehide",()=>{stopWatch();stopHost()},{once:true});
   if(new URLSearchParams(location.search).get("mode")==="director"){history.replaceState(null,"",location.pathname);setMode("narrator");showGameMenu()}
   // La Novia del Re-Animator permanecerá cerrada hasta su lanzamiento.
