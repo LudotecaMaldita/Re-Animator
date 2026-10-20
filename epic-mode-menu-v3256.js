@@ -146,6 +146,48 @@ function orderDirectorPanels(main){
   sorted.forEach((item,i)=>slots[i].replaceWith(item.node));
  }
 }
+
+// Revisión del Director basada en sus controles reales, sin alterar la vista pública.
+function enforceDirectorLayout(){
+ const director=document.body.classList.contains('mode-director');
+ if(!director)return;
+ const created=document.body.dataset.lmEpicCreated==='yes';
+ const create=document.getElementById('newEventBtn');
+ const main=document.querySelector('main');
+ if(!create||!main)return;
+ // Ocultar pestañas por sus identificadores y por su etiqueta visible.
+ const modes=['narrador','director épico','pantalla pública'];
+ for(const element of document.querySelectorAll('button,[role="tab"]')){
+  const label=(element.textContent||'').replace(/\\s+/g,' ').trim().toLocaleLowerCase('es');
+  const id=element.id||'';
+  if(['modeNarratorBtn','modeDirectorBtn','modeScreenBtn'].includes(id)||modes.some(m=>label===m||label.endsWith(' '+m))){
+   element.style.setProperty('display','none','important');
+  }
+ }
+ const prep=create.closest('section.panel,section,.panel,article')||create.parentElement;
+ // El panel de preparación es siempre visible al entrar, y desaparece al crear.
+ if(created){prep.style.setProperty('display','none','important');}
+ else{prep.style.removeProperty('display');}
+ const visibleNames=['seguimiento','recepción de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado épico'];
+ const norm=s=>(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim().toLowerCase();
+ const candidates=[...main.querySelectorAll('section.panel,section,.panel,article')].filter(n=>n!==prep&&!n.contains(prep));
+ for(const p of candidates){
+  if(!created){p.style.setProperty('display','none','important');continue;}
+  if(p.hasAttribute('data-lm-director-hidden'))p.removeAttribute('data-lm-director-hidden');
+  if(p.style.getPropertyValue('display')==='none')p.style.removeProperty('display');
+ }
+ if(!created)return;
+ // Forzar orden visual, incluyendo paneles que no son hermanos: orden por bloque de nivel superior.
+ const ordered=[];
+ for(const p of candidates){
+  const h=p.querySelector('h1,h2,h3,h4,.eyebrow,.section-title,summary');
+  const title=norm(h?.textContent);
+  const i=visibleNames.findIndex(name=>title.includes(norm(name)));
+  if(i>=0)ordered.push({p,i});
+ }
+ for(const {p,i} of ordered)p.style.setProperty('order',String(i+1),'important');
+}
+setInterval(enforceDirectorLayout,400);
 window.LMEpicSetupGate=syncPreparationGate;
 setInterval(syncPreparationGate,500);
 function publish(){
