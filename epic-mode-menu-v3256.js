@@ -66,6 +66,29 @@ async function launchDirector(){
  }catch(e){console.error(e);toast('No se pudo anunciar el Director online. Comprueba la conexión.');}
  if(el('splashNarrate')?.checked)setTimeout(()=>startSplashOpeningNarration(scenarioId),300);
 }
+// Antes de crear el evento, mostrar solo la tarjeta de preparación en el Director.
+function syncPreparationGate(){
+ const main=document.querySelector('main');
+ const create=document.getElementById('newEventBtn');
+ if(!main||!create)return;
+ const waiting=document.body.classList.contains('mode-director')&&document.body.dataset.lmEpicCreated!=='yes';
+ const section=[...main.children].find(child=>child.contains(create));
+ if(!section)return;
+ for(const child of main.children){
+  if(child===section){
+   child.style.removeProperty('display');
+  }else if(waiting){
+   if(!child.hasAttribute('data-lm-before-event-display'))child.setAttribute('data-lm-before-event-display',child.style.display||'');
+   child.style.setProperty('display','none','important');
+  }else if(child.hasAttribute('data-lm-before-event-display')){
+   const original=child.getAttribute('data-lm-before-event-display');
+   if(original)child.style.display=original;else child.style.removeProperty('display');
+   child.removeAttribute('data-lm-before-event-display');
+  }
+ }
+}
+window.LMEpicSetupGate=syncPreparationGate;
+setInterval(syncPreparationGate,500);
 function publish(){
  if(!hostLobby||!hostRoom)return;
  if(authorized&&document.body.classList.contains('mode-director')&&active()){
@@ -135,10 +158,10 @@ const oldMenu=showGameMenu;
 showGameMenu=function(){authorized=false;stopHost();stopSearch();hide();step='scenario';try{window.LMIntegratedBso?.pause?.()}catch(e){}oldMenu();};
 // Preparación antes de publicar: crear muestra la sesión a los jugadores sin iniciar el reloj.
 document.getElementById('newEventBtn')?.addEventListener('click',()=>{
- setTimeout(()=>{if(!directorState?.closed){document.body.dataset.lmEpicCreated='yes';publish();}},250);
+ setTimeout(()=>{if(!directorState?.closed){document.body.dataset.lmEpicCreated='yes';syncPreparationGate();publish();}},250);
 });
 document.getElementById('closeEventBtn')?.addEventListener('click',()=>{
- document.body.dataset.lmEpicCreated='no';setTimeout(publish,200);
+ document.body.dataset.lmEpicCreated='no';syncPreparationGate();setTimeout(publish,200);
 });
 if(el('modeDirectorBtn'))el('modeDirectorBtn').onclick=()=>authorized?navigateAppMode('director'):view('pin');
 if(el('modeNarratorBtn'))el('modeNarratorBtn').onclick=()=>{authorized=false;stopHost();navigateAppMode('narrator')};
