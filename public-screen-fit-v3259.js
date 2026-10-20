@@ -7,9 +7,45 @@
       !document.body.classList.contains("table-client") &&
       window.innerWidth>800;
   }
+  // Ajustes por texto visible, para no depender de clases antiguas del HTML.
+  function adjustGeneralTitles(){
+    const specs=[
+      {text:"Escenario anterior · laboratorio, Hill y la morgue",hide:true},
+      {text:"Fracaso · La muerte ha sido vencida",size:"clamp(20px,1.55vw,29px)"},
+      {text:"Laboratorio central",size:"clamp(22px,1.7vw,31px)",center:true},
+      {text:"Hitos globales",size:"clamp(19px,1.35vw,26px)",center:true},
+      {text:"Crisis globales",size:"clamp(19px,1.35vw,26px)",center:true}
+    ];
+    const normalize=s=>s.replace(/\\s+/g," ").trim().toLocaleLowerCase("es");
+    const roots=document.querySelectorAll("header, main, .scenario-panel");
+    const visited=new Set();
+    for(const root of roots){
+      for(const el of root.querySelectorAll("h1,h2,h3,h4,h5,p,span,div,strong,small")){
+        if(visited.has(el))continue;
+        visited.add(el);
+        const value=normalize(el.textContent||"");
+        const spec=specs.find(item=>normalize(item.text)===value);
+        if(!spec)continue;
+        // Preferir el nodo de texto más interno que contenga el título exacto.
+        if(Array.from(el.children).some(ch=>normalize(ch.textContent||"")===value))continue;
+        if(spec.hide){
+          el.style.setProperty("display","none","important");
+          continue;
+        }
+        el.style.setProperty("font-size",spec.size,"important");
+        el.style.setProperty("line-height","1.2","important");
+        if(spec.center){
+          el.style.setProperty("text-align","center","important");
+          el.style.setProperty("width","100%","important");
+          el.style.setProperty("display","block","important");
+        }
+      }
+    }
+  }
   function update(){
     pending=false;
     if(!publicScreen())return;
+    adjustGeneralTitles();
     for(const type of ["outcome-panel","global-panel"]){
       const panel=document.querySelector("main>div.event-director-only:not(#directorQuickbar)>."+type);
       if(!panel||panel.offsetParent===null)continue;
