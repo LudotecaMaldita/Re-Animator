@@ -67,103 +67,85 @@ async function launchDirector(){
  if(el('splashNarrate')?.checked)setTimeout(()=>startSplashOpeningNarration(scenarioId),300);
 }
 // Antes de crear el evento, mostrar solo la tarjeta de preparación en el Director.
-function syncPreparationGate(){
- const main=document.querySelector('main');
- const create=document.getElementById('newEventBtn');
- if(!main||!create)return;
- const director=document.body.classList.contains('mode-director');
- const waiting=director&&document.body.dataset.lmEpicCreated!=='yes';
- const preparation=create.closest('section,.panel,article,details,.director-section')||create.parentElement;
- // No intervenir en la pantalla general, narración ni jugadores.
- if(!director){
-  for(const element of document.querySelectorAll('[data-lm-gate-hidden]')){
-   element.style.removeProperty('display');
-   element.removeAttribute('data-lm-gate-hidden');
-  }
-  return;
- }
- // No ocultar el contenedor principal: contiene todos los paneles del Director.
- const sections=[...main.querySelectorAll('section,.panel,article,details,.director-section')]
-  .filter(node=>!node.querySelector('section,.panel,article,details,.director-section'));
- const candidates=[...new Set([preparation,...sections])].filter(Boolean);
- for(const node of candidates){
-  if(node===main||node.contains(preparation)&&node!==preparation)continue;
-  const hide=waiting?node!==preparation:node===preparation;
-  if(hide){
-   node.style.setProperty('display','none','important');
-   node.setAttribute('data-lm-gate-hidden','');
-  }else if(node.hasAttribute('data-lm-gate-hidden')){
-   node.style.removeProperty('display');
-   node.removeAttribute('data-lm-gate-hidden');
-  }
- }
- if(!waiting)orderDirectorPanels(main);
-}
-function orderDirectorPanels(main){
- const names=[
-  'seguimiento','recepción de informes','reserva de dosis',
-  'estado global','hitos globales','comunicado global','resultado épico'
- ];
- const normalize=s=>(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();
- const indexOf=s=>names.findIndex(name=>normalize(s).includes(normalize(name)));
- // Buscar bloques de contenido, no sus títulos aislados ni la cuadrícula exterior.
- const nodes=[...main.querySelectorAll('section,.panel,article,details,.director-section')];
- const identified=[];
- for(const node of nodes){
-  const heading=node.querySelector('h1,h2,h3,h4,.eyebrow,summary,.section-title');
-  if(!heading)continue;
-  const index=indexOf(heading.textContent);
-  if(index<0)continue;
-  if(nodes.some(inner=>inner!==node&&node.contains(inner)&&indexOf(inner.querySelector('h1,h2,h3,h4,.eyebrow,summary,.section-title')?.textContent)===index))continue;
-  identified.push({node,index});
- }
- // Mover solamente bloques hermanos; nunca deshacer la estructura de otro panel.
- const parents=new Map();
- for(const item of identified){
-  const parent=item.node.parentElement;
-  if(!parents.has(parent))parents.set(parent,[]);
-  parents.get(parent).push(item);
- }
- for(const [parent,items] of parents){
-  if(items.length<2)continue;
-  const sorted=[...items].sort((a,b)=>a.index-b.index);
-  // Orden estable: reconstruir únicamente las posiciones de los bloques identificados.
-  const placeholders=items.map(({node})=>{
-   const marker=document.createComment('lm-epic-order');
-   parent.insertBefore(marker,node);
-   node.remove();
-   return marker;
-  });
-  sorted.forEach((item,i)=>parent.replaceChild(item.node,placeholders[i]));
- }
-}
-// Menú interno del Director: ocultar navegación de modos y preparar vista por fases.
-const directorOnlyStyles=document.createElement('style');
-directorOnlyStyles.textContent=`
+// La vista del Director se controla desde el botón real de creación.
+const directorGateStyle=document.createElement('style');
+directorGateStyle.textContent=`
 body.mode-director #modeNarratorBtn,
 body.mode-director #modeDirectorBtn,
 body.mode-director #modeScreenBtn,
 body.mode-director #openScreenBtn,
-body.mode-director #sharePublicBtn{display:none!important}
-body.mode-director.lm-epic-event-created .timer-panel{display:none!important}
+body.mode-director #sharePublicBtn,
+body.mode-director .app-quick-nav{display:none!important}
+body.mode-director [data-lm-director-hidden="true"]{display:none!important}
 `;
-document.head.appendChild(directorOnlyStyles);
-const previousGate=syncPreparationGate;
-syncPreparationGate=function(){
+document.head.appendChild(directorGateStyle);
+function syncPreparationGate(){
  const director=document.body.classList.contains('mode-director');
- const created=director&&document.body.dataset.lmEpicCreated==='yes';
- document.body.classList.toggle('lm-epic-event-created',created);
- previousGate();
- if(!director)return;
  const create=document.getElementById('newEventBtn');
- if(!create)return;
- const panel=create.closest('section.panel,section,article,.director-section,.panel');
- // La preparación no debe seguir visible una vez creado el evento.
- if(panel&&created)panel.style.setProperty('display','none','important');
- if(panel&&!created&&panel.hasAttribute('data-lm-gate-hidden')){
-   panel.style.removeProperty('display');panel.removeAttribute('data-lm-gate-hidden');
+ if(!director||!create){
+  document.querySelectorAll('[data-lm-director-hidden]').forEach(n=>n.removeAttribute('data-lm-director-hidden'));
+  return;
  }
-};
+ const created=document.body.dataset.lmEpicCreated==='yes';
+ // Conservar el bloque más próximo al botón y todos sus antecesores.
+ const prep=create.closest('.panel,section,article,.director-section,details')||create.parentElement;
+ const nodes=[...document.querySelectorAll('main .panel,main section,main article,main details,main .director-section')];
+ for(const node of nodes){
+  if(!node.isConnected||node===prep||node.contains(prep)) {
+   node.removeAttribute('data-lm-director-hidden');continue;
+  }
+  // La preparación se muestra sola, luego se retira para descubrir los demás paneles.
+  const hide=created?prep.contains(node):true;
+  if(hide)node.setAttribute('data-lm-director-hidden','true');
+  else node.removeAttribute('data-lm-director-hidden');
+ }
+ if(created)prep.setAttribute('data-lm-director-hidden','true');
+ else prep.removeAttribute('data-lm-director-hidden');
+ // También ocultar contenedores hermanos de la preparación mientras no haya evento.
+ if(!created){
+  let branch=prep;
+  while(branch&&branch.parentElement&&branch.parentElement.tagName!=='BODY'){
+   const parent=branch.parentElement;
+   for(const sibling of parent.children){
+    if(sibling===branch||sibling.tagName==='SCRIPT'||sibling.tagName==='STYLE')continue;
+    if(parent.matches('main,main *, .event-director-only')&&sibling.matches('section,.panel,article,details,.director-section'))
+     sibling.setAttribute('data-lm-director-hidden','true');
+   }
+   if(parent.tagName==='MAIN')break;
+   branch=parent;
+  }
+ }else{
+  const main=document.querySelector('main');
+  if(main)orderDirectorPanels(main);
+ }
+}
+function orderDirectorPanels(main){
+ const names=['seguimiento','recepcion de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado epico'];
+ const norm=s=>(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,' ').trim();
+ const identified=[];
+ for(const panel of main.querySelectorAll('section,.panel,article,.director-section')){
+  const heading=panel.querySelector('h1,h2,h3,h4,.eyebrow,.section-title,summary');
+  const index=heading?names.findIndex(n=>norm(heading.textContent).includes(n)):-1;
+  if(index<0)continue;
+  if(identified.some(it=>it.node.contains(panel)))continue;
+  identified.push({node:panel,index});
+ }
+ // Reordenar únicamente elementos que comparten contenedor; preservar sus eventos.
+ const groups=new Map();
+ for(const item of identified){
+  const parent=item.node.parentElement;
+  if(!groups.has(parent))groups.set(parent,[]);
+  groups.get(parent).push(item);
+ }
+ for(const [parent,items] of groups){
+  if(items.length<2)continue;
+  const sorted=[...items].sort((x,y)=>x.index-y.index);
+  // Evitar movimientos DOM repetitivos.
+  if(items.every((it,i)=>it.node===sorted[i].node))continue;
+  const slots=items.map(it=>{const mark=document.createComment('lm-order');parent.insertBefore(mark,it.node);it.node.remove();return mark});
+  sorted.forEach((item,i)=>slots[i].replaceWith(item.node));
+ }
+}
 window.LMEpicSetupGate=syncPreparationGate;
 setInterval(syncPreparationGate,500);
 function publish(){
