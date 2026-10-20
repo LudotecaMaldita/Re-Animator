@@ -213,6 +213,39 @@ function hideGlobalAnnouncementNarrator(){
   }
 }
 setInterval(hideGlobalAnnouncementNarrator,800);
+
+/* Temporizador del Director: restaurar panel real y colocarlo antes de Seguimiento.
+   No actúa en mode-screen (Pantalla General bloqueada). */
+function restoreDirectorTimer(){
+ if(!document.body.classList.contains('mode-director'))return;
+ const timer=document.querySelector('main section.timer-panel');
+ const tracking=document.querySelector('main section.tables-panel');
+ if(!timer||!tracking)return;
+ const created=document.body.dataset.lmEpicCreated==='yes';
+ if(!created){
+  timer.setAttribute('data-lm-director-hidden','true');
+  return;
+ }
+ timer.removeAttribute('data-lm-director-hidden');
+ timer.style.setProperty('display','block','important');
+ timer.style.setProperty('visibility','visible','important');
+ timer.style.setProperty('order','0','important');
+ const holder=tracking.parentElement;
+ if(holder&&timer.parentElement===holder&&timer.nextElementSibling!==tracking){
+  holder.insertBefore(timer,tracking);
+ }
+ tracking.style.setProperty('order','1','important');
+ for(const id of ['timerDisplay','timerStartBtn','timerPauseBtn']){
+  const control=document.getElementById(id);
+  if(control){
+   control.hidden=false;
+   control.style.removeProperty('display');
+   control.style.removeProperty('visibility');
+  }
+ }
+}
+setInterval(restoreDirectorTimer,250);
+
 window.LMEpicSetupGate=syncPreparationGate;
 setInterval(syncPreparationGate,500);
 function publish(){
