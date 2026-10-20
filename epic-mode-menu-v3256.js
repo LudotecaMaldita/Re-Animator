@@ -21,7 +21,7 @@ function client(){
  return window.__LMRealtimeClient=window.supabase.createClient('https://hzlyiuhkolyhnvhhdgvk.supabase.co','sb_publishable_-sjvuy-a955SZjxi5nUOlQ_0uKLlfSe',{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 }
 const topic=sid=>'lm-reanimator-active-v3256:'+sid;
-function active(){return !!directorState&&!directorState.closed&&!!(directorState.timer?.running||(Number(directorState.timer?.remaining)<Number(directorState.durationMin)*60&&!directorState.timer?.expired));}
+function active(){return !!directorState&&!directorState.closed&&document.body.dataset.lmEpicCreated==='yes';}
 function stopHost(){if(hostInterval)clearInterval(hostInterval);hostInterval=null;if(hostLobby){hostLobby.untrack().catch(()=>{});client().removeChannel(hostLobby).catch(()=>{});hostLobby=null;}hostRoom='';}
 function stopSearch(){if(playerInterval)clearInterval(playerInterval);playerInterval=null;if(playerLobby){client().removeChannel(playerLobby).catch(()=>{});playerLobby=null;}}
 function show(){root.hidden=false;document.body.classList.add('lm-route-visible');el('lmRouteScenario').textContent=SCENARIOS[scenarioId]?.short||'';}
@@ -56,7 +56,7 @@ function launchNarration(){
  if(el('splashNarrate')?.checked)setTimeout(()=>startSplashOpeningNarration(scenarioId),200);
 }
 async function launchDirector(){
- authorized=true;hide();document.body.classList.remove('lm-narration-only');setMode('director');appViewHistory.length=0;localStorage.setItem(BASE_STORE+'.mode','director');
+ authorized=true;document.body.dataset.lmEpicCreated='no';hide();document.body.classList.remove('lm-narration-only');setMode('director');appViewHistory.length=0;localStorage.setItem(BASE_STORE+'.mode','director');
  try{
   hostRoom=await window.LMEpicRealtime.ensureHost();
   if(!hostRoom)throw Error('No hay una sala de Director disponible.');
@@ -79,7 +79,7 @@ function drawGames(){
   if(x.kind==='director'&&x.active===true&&x.scenario===playerScenario&&typeof x.room==='string'&&x.room.startsWith('lm-')&&Date.now()-Number(x.at||0)<30000)sessions.set(x.room,x);
  }
  rooms.replaceChildren();
- if(!sessions.size){rooms.innerHTML='<div class="lm-route-empty"><strong>No hay partidas activas</strong>El Director debe estar conectado y haber iniciado el temporizador. En cuanto lo haga, la partida aparecerá aquí.</div>';return;}
+ if(!sessions.size){rooms.innerHTML='<div class="lm-route-empty"><strong>No hay partidas activas</strong>El Director debe estar conectado y haber pulsado Crear evento. En cuanto lo haga, la partida aparecerá aquí.</div>';return;}
  for(const game of sessions.values()){
   const card=document.createElement('div'),left=document.createElement('div'),title=document.createElement('strong'),sub=document.createElement('small'),btn=document.createElement('button');
   card.className='lm-route-room';title.textContent=game.name||'Partida épica';sub.textContent=(Number(game.M)||3)+' mesas · Director conectado';left.append(title,sub);
@@ -133,6 +133,13 @@ setMode=function(mode){
 };
 const oldMenu=showGameMenu;
 showGameMenu=function(){authorized=false;stopHost();stopSearch();hide();step='scenario';try{window.LMIntegratedBso?.pause?.()}catch(e){}oldMenu();};
+// Preparación antes de publicar: crear muestra la sesión a los jugadores sin iniciar el reloj.
+document.getElementById('newEventBtn')?.addEventListener('click',()=>{
+ setTimeout(()=>{if(!directorState?.closed){document.body.dataset.lmEpicCreated='yes';publish();}},250);
+});
+document.getElementById('closeEventBtn')?.addEventListener('click',()=>{
+ document.body.dataset.lmEpicCreated='no';setTimeout(publish,200);
+});
 if(el('modeDirectorBtn'))el('modeDirectorBtn').onclick=()=>authorized?navigateAppMode('director'):view('pin');
 if(el('modeNarratorBtn'))el('modeNarratorBtn').onclick=()=>{authorized=false;stopHost();navigateAppMode('narrator')};
 if(el('splashNarratorBtn')){el('splashNarratorBtn').textContent='🎬 CONTINUAR · VER INTRODUCCIÓN';el('splashNarratorBtn').onclick=beginIntro;}
