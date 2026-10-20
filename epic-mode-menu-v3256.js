@@ -199,6 +199,25 @@ function enforceDirectorLayout(){
  for(const {p,i} of ordered)p.style.setProperty('order',String(i+1),'important');
 }
 setInterval(enforceDirectorLayout,400);
+function positionDirectorTimer(){
+ if(!document.body.classList.contains('mode-director')||document.body.dataset.lmEpicCreated!=='yes')return;
+ const main=document.querySelector('main');
+ const timer=main?.querySelector('.timer-panel');
+ if(!timer)return;
+ const following=[...main.querySelectorAll('section,.panel,article')]
+ .find(p=>p!==timer&&!p.contains(timer)&&/seguimiento/i.test(p.querySelector('h1,h2,h3,h4,.eyebrow')?.textContent||''));
+ const target=following?.parentElement||main;
+ if(timer.parentElement!==target){
+  if(following)target.insertBefore(timer,following);
+  else target.prepend(timer);
+ }
+ timer.removeAttribute('data-lm-director-hidden');
+ timer.style.setProperty('display','block','important');
+ timer.style.setProperty('order','0','important');
+ for(const b of timer.querySelectorAll('button'))b.style.removeProperty('display');
+}
+setInterval(positionDirectorTimer,400);
+
 
 function hideGlobalAnnouncementNarrator(){
   if(!document.body.classList.contains('mode-director'))return;
