@@ -120,7 +120,7 @@ function syncPreparationGate(){
  }
 }
 function orderDirectorPanels(main){
- const names=['seguimiento','recepcion de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado epico'];
+ const names=['tiempo de juego','seguimiento','recepcion de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado epico'];
  const norm=s=>(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,' ').trim();
  const identified=[];
  for(const panel of main.querySelectorAll('section,.panel,article,.director-section')){
@@ -168,7 +168,7 @@ function enforceDirectorLayout(){
  // El panel de preparación es siempre visible al entrar, y desaparece al crear.
  if(created){prep.style.setProperty('display','none','important');}
  else{prep.style.removeProperty('display');}
- const visibleNames=['seguimiento','recepción de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado épico'];
+ const visibleNames=['tiempo de juego','seguimiento','recepción de informes','reserva de dosis','estado global','hitos globales','comunicado global','resultado épico'];
  const norm=s=>(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim().toLowerCase();
  const candidates=[...main.querySelectorAll('section.panel,section,.panel,article')].filter(n=>n!==prep&&!n.contains(prep));
  for(const p of candidates){
@@ -184,6 +184,17 @@ function enforceDirectorLayout(){
   const title=norm(h?.textContent);
   const i=visibleNames.findIndex(name=>title.includes(norm(name)));
   if(i>=0)ordered.push({p,i});
+ }
+ // Mostrar el temporizador original con sus controles, sin crear un reloj duplicado.
+ const timer=main.querySelector('.timer-panel');
+ if(timer){
+  timer.removeAttribute('data-lm-director-hidden');
+  timer.style.removeProperty('display');
+  timer.style.setProperty('order','0','important');
+  // Conservar la funcionalidad existente del botón Inicio/Pausa.
+  for(const control of timer.querySelectorAll('button')){
+   control.style.removeProperty('display');
+  }
  }
  for(const {p,i} of ordered)p.style.setProperty('order',String(i+1),'important');
 }
