@@ -657,7 +657,7 @@ body.mode-screen.table-client{overflow:auto!important}.mode-screen.table-client 
     <div class="top-actions">
       <button id="openGameMenuBtn" class="ghost compact menu-open-btn" type="button">⌂ Inicio</button>
       <button id="fullscreenBtn" class="ghost compact" type="button">Pantalla completa</button>
-      <button id="openScreenBtn" class="ghost compact" type="button">📺 Abrir pantalla pública ↗</button>
+      <button id="openScreenBtn" class="ghost compact" type="button">📺 Abrir pantalla general ↗</button>
       <button id="sharePublicBtn" class="ghost compact" type="button">🔗 QR y enlaces</button>
     </div>
   </header>
@@ -2509,7 +2509,7 @@ const LMEpicRealtime=(()=>{
     const fin=byId("publicFinishTableBtn");fin.disabled=t.finished;fin.textContent=t.finished?"Mesa cerrada":"Cerrar y puntuar mi mesa";fin.onclick=()=>{if(confirm(`¿Cerrar definitivamente la Mesa ${t.id} con el resultado seleccionado?`))sendAction("finish",{result:rs.value,extras:publicExtras()})};
   }
   function initPublicUI(){
-    if(!publicMode())return;const room=requestedRoom();if(room){byId("publicTableGate")?.classList.remove("hidden");connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}
+    if(!publicMode())return;const generalView=new URLSearchParams(location.search).get("view")==="general";document.body.classList.toggle("public-general-view",generalView);const room=requestedRoom();if(room){byId("publicTableGate")?.classList.toggle("hidden",generalView);connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}
     byId("publicGeneralViewBtn")?.addEventListener("click",()=>{byId("publicTableGate")?.classList.add("hidden");document.body.classList.remove("table-client")});
     byId("publicChangeTableBtn")?.addEventListener("click",changeTable);byId("publicRefreshStateBtn")?.addEventListener("click",()=>{if(clientConn?.open)send(clientConn,{type:"request_state"})});
     byId("publicSpokesperson")?.addEventListener("change",e=>sendAction("spokesperson",{value:e.target.value}));
@@ -2563,7 +2563,7 @@ async function openPublicScreenWindow(){
   }
   const room=await ensurePublicRoom();
   if(room===null){try{popup?.close()}catch(e){}return}
-  const url=buildPublicAccessUrl(room);
+  const url=buildPublicAccessUrl(room)+"&view=general";
   if(popup){
     try{popup.opener=null}catch(e){}
     popup.location.replace(url);
