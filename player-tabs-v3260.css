@@ -46,3 +46,15 @@
    font-size:clamp(13px,3.5vw,16px);line-height:1.4
  }
 }
+
+/* Comunicado Global fijo en la cabecera móvil, inmediatamente bajo el cronómetro. */
+@media(max-width:760px){
+body.mode-screen.table-client:not(.public-general-view) #lmPlayerMobileNav #lmMobileAnnouncement{
+ display:block!important;position:relative!important;margin:0!important;width:100%!important;
+ height:auto!important;min-height:0!important;max-width:100%!important;
+ border-radius:13px!important;overflow:visible!important;
+}
+body.mode-screen.table-client:not(.public-general-view) #lmMobileAnnouncement .panel-pad{padding:12px 14px!important}
+body.mode-screen.table-client:not(.public-general-view) #lmMobileAnnouncement h2{font-size:20px!important;line-height:1.25!important}
+body.mode-screen.table-client:not(.public-general-view) #lmMobileAnnouncement :is(p,small,span){font-size:14px!important;line-height:1.4!important}
+}
