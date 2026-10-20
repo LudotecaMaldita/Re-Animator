@@ -1,0 +1,22 @@
+name: Inspect public screen layout once
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-public-screen-v3257.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect HTML structure
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path("index.html").read_text(encoding="utf8")
+          for q in ["Cerrar todo","event-director-only","timer-panel","director-quickbar","scenario-panel","director-accordion"]:
+            print("TARGET:",q)
+            for m in list(re.finditer(re.escape(q),t,re.I))[:8]:
+              print(t[max(0,m.start()-280):m.end()+240].replace("\n"," "))
