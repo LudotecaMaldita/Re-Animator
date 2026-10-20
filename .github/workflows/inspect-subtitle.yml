@@ -1,0 +1,23 @@
+name: Inspect ReAnimator subtitle
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-subtitle.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate scenario header subtitle
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          for q in ['Escenario anterior', 'scenario-copy', 'scenario-context-row', 'scenario-panel', 'scenarioDescription', 'scenarioSubtitle']:
+              hits=list(re.finditer(re.escape(q),t,re.I))
+              print('MATCH:',q,'total',len(hits))
+              for m in hits[-6:]:
+                  print('SNIP:',t[max(0,m.start()-320):min(len(t),m.end()+330)].replace('\n',' '))
