@@ -127,9 +127,14 @@ function orderDirectorPanels(main){
  for(const [parent,items] of parents){
   if(items.length<2)continue;
   const sorted=[...items].sort((a,b)=>a.index-b.index);
-  const anchors=items.map(x=>x.node);
-  const end=anchors[anchors.length-1].nextSibling;
-  for(const item of sorted)parent.insertBefore(item.node,end);
+  // Orden estable: reconstruir únicamente las posiciones de los bloques identificados.
+  const placeholders=items.map(({node})=>{
+   const marker=document.createComment('lm-epic-order');
+   parent.insertBefore(marker,node);
+   node.remove();
+   return marker;
+  });
+  sorted.forEach((item,i)=>parent.replaceChild(item.node,placeholders[i]));
  }
 }
 // Menú interno del Director: ocultar navegación de modos y preparar vista por fases.
