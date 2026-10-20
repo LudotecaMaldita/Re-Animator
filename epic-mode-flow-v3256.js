@@ -262,8 +262,8 @@
     ];
     if(created){
       const panels=selectors.map(s=>parent.querySelector(':scope > '+s)).filter(Boolean);
-      const original=panels.filter(n=>n.parentElement===parent);
-      if(original.length===panels.length){
+      const original=[...parent.children].filter(n=>panels.includes(n));
+      if(original.length===panels.length&&!original.every((node,i)=>node===panels[i])){
         const positions=original.map(node=>{const mark=document.createComment('director-order');parent.insertBefore(mark,node);return mark});
         panels.forEach((node,i)=>positions[i].replaceWith(node));
       }
