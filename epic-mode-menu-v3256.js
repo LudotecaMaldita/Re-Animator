@@ -101,7 +101,7 @@ function syncPreparationGate(){
 }
 function orderDirectorPanels(main){
  const names=[
-  'tiempo de juego','seguimiento','recepción de informes','reserva de dosis',
+  'seguimiento','recepción de informes','reserva de dosis',
   'estado global','hitos globales','comunicado global','resultado épico'
  ];
  const normalize=s=>(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();
@@ -132,6 +132,33 @@ function orderDirectorPanels(main){
   for(const item of sorted)parent.insertBefore(item.node,end);
  }
 }
+// Menú interno del Director: ocultar navegación de modos y preparar vista por fases.
+const directorOnlyStyles=document.createElement('style');
+directorOnlyStyles.textContent=`
+body.mode-director #modeNarratorBtn,
+body.mode-director #modeDirectorBtn,
+body.mode-director #modeScreenBtn,
+body.mode-director #openScreenBtn,
+body.mode-director #sharePublicBtn{display:none!important}
+body.mode-director.lm-epic-event-created .timer-panel{display:none!important}
+`;
+document.head.appendChild(directorOnlyStyles);
+const previousGate=syncPreparationGate;
+syncPreparationGate=function(){
+ const director=document.body.classList.contains('mode-director');
+ const created=director&&document.body.dataset.lmEpicCreated==='yes';
+ document.body.classList.toggle('lm-epic-event-created',created);
+ previousGate();
+ if(!director)return;
+ const create=document.getElementById('newEventBtn');
+ if(!create)return;
+ const panel=create.closest('section.panel,section,article,.director-section,.panel');
+ // La preparación no debe seguir visible una vez creado el evento.
+ if(panel&&created)panel.style.setProperty('display','none','important');
+ if(panel&&!created&&panel.hasAttribute('data-lm-gate-hidden')){
+   panel.style.removeProperty('display');panel.removeAttribute('data-lm-gate-hidden');
+ }
+};
 window.LMEpicSetupGate=syncPreparationGate;
 setInterval(syncPreparationGate,500);
 function publish(){
