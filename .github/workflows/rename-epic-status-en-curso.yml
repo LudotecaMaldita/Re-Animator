@@ -1,0 +1,31 @@
+name: Rename provisional status to En curso
+on:
+  push:
+    paths:
+      - ".github/workflows/rename-epic-status-en-curso.yml"
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Change epic status text
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          t=p.read_text(encoding="utf8")
+          old='directorState.closed?"Final":"Provisional"'
+          assert t.count(old)==1, "No se encontró etiqueta de resultado"
+          t=t.replace(old,'directorState.closed?"Final":"En curso"',1)
+          p.write_text(t,encoding="utf8")
+          print("Resultado: En curso / Final")
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Rename provisional epic status to En curso"
+          git pull --rebase origin main
+          git push
