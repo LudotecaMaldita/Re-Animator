@@ -1,0 +1,21 @@
+name: Inspect public viewer routing
+on:
+  push:
+    paths: [".github/workflows/inspect-public-viewer-routing.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print routing context
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path("index.html").read_text()
+          for key in ['function requestedTable','function initPublicUI','function renderPublicPlayer','function buildPublicAccessUrl','async function openPublicScreenWindow','function applyScreenMode','table-client','publicPlayerPanel']:
+            print("KEY",key)
+            for m in list(re.finditer(re.escape(key),t))[-3:]:
+              print(t[max(0,m.start()-130):m.start()+1550].replace("\n"," "))
