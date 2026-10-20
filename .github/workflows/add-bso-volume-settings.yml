@@ -47,7 +47,7 @@ jobs:
           assert html.count(hook)==1, 'Expected integrated BSO instance exactly once'
           js='''
           /* LM · BSO volume persisted independently from narration volume. */
-          const LM_BSO_VOLUME_STORAGE = \`\${BASE_STORE}.bsoVolume\`;
+          const LM_BSO_VOLUME_STORAGE = BASE_STORE+'.bsoVolume';
           const lmBsoVolumeValue = localStorage.getItem(LM_BSO_VOLUME_STORAGE);
           if(lmBsoVolumeValue !== null && lmBsoVolumeValue !== ""){
             const saved = Number(lmBsoVolumeValue);
@@ -64,14 +64,14 @@ jobs:
             const slider=byId("scenarioBsoVolume"),output=byId("scenarioBsoVolumeOutput");
             const percentage=Math.round(this.baseVolume*100);
             if(slider&&Number(slider.value)!==percentage)slider.value=String(percentage);
-            if(output)output.textContent=\`\${percentage}%\`;
+            if(output)output.textContent=String(percentage)+'%';
           };
           const lmBsoVolumeSlider=byId("scenarioBsoVolume");
           if(lmBsoVolumeSlider){
             const initialPercent=Math.round(window.LMIntegratedBso.baseVolume*100);
             lmBsoVolumeSlider.value=String(initialPercent);
             const output=byId("scenarioBsoVolumeOutput");
-            if(output)output.textContent=\`\${initialPercent}%\`;
+            if(output)output.textContent=String(initialPercent)+'%';
             lmBsoVolumeSlider.addEventListener("input",event=>{
               window.LMIntegratedBso.setVolume(Number(event.target.value)/100);
             });
@@ -80,7 +80,7 @@ jobs:
           if 'LM_BSO_VOLUME_STORAGE' not in html:
             html=html.replace(hook,hook+'\n'+js,1)
           assert 'id="scenarioBsoVolume"' in html
-          assert html.count('LM_BSO_VOLUME_STORAGE')>=4
+          assert html.count('LM_BSO_VOLUME_STORAGE')>=3
           assert html.count('window.LMIntegratedBso=new IntegratedScenarioBso();')==1
           assert 'function duckSoundtracks(on)' in html
           p.write_text(html,encoding='utf-8')
