@@ -355,3 +355,6 @@ html body.mode-screen:not(.table-client) .global-panel .metric-card strong{
    height:auto!important;min-height:0!important;
  }
 }
+
+/* Ocultar subtítulo descriptivo debajo del título principal en TODOS los modos. */
+html body .scenario-panel .scenario-copy{display:none!important}
