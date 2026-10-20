@@ -1,0 +1,48 @@
+/* Re-Animator · Navegación móvil de las mesas v3.2.60 */
+@media(max-width:760px){
+ body.mode-screen.table-client:not(.public-general-view) #directorQuickbar,
+ body.mode-screen.table-client:not(.public-general-view) #directorCollapseAll{display:none!important}
+ body.mode-screen.table-client:not(.public-general-view) #lmPlayerMobileNav{
+   display:flex!important;flex-direction:column!important;gap:10px!important;
+   margin:8px 0 12px!important;padding:0 4px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .lm-player-clock{
+   display:flex;justify-content:space-between;align-items:center;gap:8px;
+   border:1px solid rgba(194,178,114,.38);background:rgba(11,12,11,.94);
+   border-radius:12px;padding:10px 14px;color:#ece2bd;
+   font-size:15px;font-weight:700;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #lmPlayerClock{
+   color:#9ded60;font-size:clamp(23px,6.5vw,33px);font-variant-numeric:tabular-nums
+ }
+ body.mode-screen.table-client:not(.public-general-view) .lm-player-tabs{
+   display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .lm-player-tabs button{
+   min-width:0;min-height:56px;padding:10px 7px;
+   border-radius:12px;border:1px solid #645d42;background:#171713;color:#e1d5b4;
+   font-size:clamp(13px,3.5vw,17px);line-height:1.25;font-weight:750;
+   touch-action:manipulation;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .lm-player-tabs button[aria-selected="true"]{
+   border-color:#9fda6a;background:#243224;color:#bdf99f;box-shadow:0 0 0 1px #84b75c66 inset
+ }
+ body.mode-screen.table-client.lm-player-tab-data .event-director-only>section.panel:not(#publicPlayerPanel),
+ body.mode-screen.table-client.lm-player-tab-status #publicPlayerPanel{display:none!important}
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only>section.panel:not(.global-panel):not(.announcement-panel):not(.tables-panel):not(.outcome-panel){display:none!important}
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only>section.panel:is(.global-panel,.announcement-panel,.tables-panel,.outcome-panel){
+   display:block!important;margin:0 0 12px!important;overflow:visible!important;height:auto!important;min-height:0!important;
+ }
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only{
+   display:flex!important;flex-direction:column!important;gap:10px!important;
+ }
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only>section.panel .panel-pad{
+   padding:14px 12px!important
+ }
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only>section.panel h2{
+   font-size:clamp(22px,5.5vw,30px)!important;line-height:1.18!important
+ }
+ body.mode-screen.table-client.lm-player-tab-status .event-director-only>section.panel :is(p,small,span,li){
+   font-size:clamp(13px,3.5vw,16px);line-height:1.4
+ }
+}
