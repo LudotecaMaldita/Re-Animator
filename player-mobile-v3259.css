@@ -1,0 +1,89 @@
+/* Ludoteca Maldita · Vista Jugador para móviles v3.2.59
+   Exclusivamente pantallas de jugador (mode=screen), nunca Director ni pantalla general. */
+@media (max-width: 760px) {
+ body.mode-screen:not(.public-general-view) {
+   font-size:16px;
+   -webkit-text-size-adjust:100%;
+ }
+ body.mode-screen:not(.public-general-view) #publicTableGate:not(.hidden) {
+   position:fixed!important;inset:0!important;z-index:4200!important;
+   overflow-y:auto!important;overscroll-behavior:contain!important;
+   padding:calc(16px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))!important;
+   box-sizing:border-box!important;
+ }
+ body.mode-screen:not(.public-general-view) #publicTableGate .public-table-choice,
+ body.mode-screen:not(.public-general-view) #publicTableChoices button {
+   display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+   justify-content:center!important;width:100%!important;min-height:76px!important;
+   padding:15px 18px!important;margin:0!important;
+   border-radius:14px!important;font-size:22px!important;font-weight:800!important;
+   line-height:1.25!important;touch-action:manipulation;
+ }
+ body.mode-screen:not(.public-general-view) #publicTableChoices {
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+   gap:12px!important;max-height:none!important;overflow:visible!important;
+ }
+ body.mode-screen:not(.public-general-view) #publicTableChoices small {
+   margin-top:6px!important;font-size:13px!important;font-weight:500!important;
+   line-height:1.3!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicPlayerPanel {
+   display:block!important;overflow:visible!important;
+   margin:6px 0 18px!important;border-radius:15px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicPlayerPanel .panel-pad {
+   padding:16px 13px 20px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-head {
+   display:flex!important;align-items:flex-start!important;
+   flex-direction:column!important;gap:10px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicPlayerTitle {
+   font-size:clamp(26px,7vw,34px)!important;line-height:1.15!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-connection {
+   font-size:14px!important;max-width:100%!important;white-space:normal!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-grid {
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:13px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-block {
+   padding:15px 12px!important;margin:13px 0!important;
+   border-radius:13px!important;overflow:visible!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-block h3 {
+   font-size:19px!important;line-height:1.25!important;margin:0 0 13px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-actions,
+ body.mode-screen.table-client:not(.public-general-view) #publicStageButtons {
+   display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) .public-player-actions button,
+ body.mode-screen.table-client:not(.public-general-view) #publicStageButtons button,
+ body.mode-screen.table-client:not(.public-general-view) #publicFinishTableBtn,
+ body.mode-screen.table-client:not(.public-general-view) #publicGiveAidBtn,
+ body.mode-screen.table-client:not(.public-general-view) #publicChangeTableBtn,
+ body.mode-screen.table-client:not(.public-general-view) #publicRefreshStateBtn {
+   display:flex!important;align-items:center!important;justify-content:center!important;
+   flex-direction:column!important;width:100%!important;min-height:56px!important;
+   padding:13px 14px!important;box-sizing:border-box!important;
+   border-radius:12px!important;font-size:16px!important;line-height:1.25!important;
+   white-space:normal!important;text-align:center!important;touch-action:manipulation;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicStageButtons button small {
+   font-size:13px!important;margin-top:5px!important;line-height:1.25!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicPlayerPanel :is(input,select) {
+   min-height:48px!important;font-size:16px!important;max-width:100%!important;
+   box-sizing:border-box!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) #publicPlayerPanel label {
+   font-size:15px!important;line-height:1.35!important;
+ }
+ body.mode-screen.table-client:not(.public-general-view) :is(#publicReportHint,#publicAidHint,.public-player-note) {
+   font-size:14px!important;line-height:1.5!important;overflow-wrap:anywhere;
+ }
+ body.mode-screen.table-client:not(.public-general-view) button:disabled {
+   opacity:.52!important;cursor:not-allowed!important;
+ }
+}
