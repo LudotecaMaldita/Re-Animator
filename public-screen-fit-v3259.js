@@ -17,7 +17,7 @@
       {match:/^crisis globales$/i,size:"clamp(19px,1.35vw,25px)",center:true}
     ];
     const clean=s=>(s||"").replace(/\\s+/g," ").trim();
-    const elements=document.querySelectorAll("body *");
+    const elements=document.querySelectorAll("header *, main *, .scenario-panel *");
     for(const el of elements){
       if(el.children.length>0 && Array.from(el.children).some(ch=>rules.some(r=>r.match.test(clean(ch.textContent)))))continue;
       const text=clean(el.textContent);
