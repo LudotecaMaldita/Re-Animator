@@ -1,0 +1,42 @@
+name: Hide scenario header subtitle v3.2.60
+on:
+  push:
+    paths:
+      - ".github/workflows/hide-scenario-header-subtitle-v3260.yml"
+permissions:
+  contents: write
+jobs:
+  fix-subtitle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove subtitle display under main scenario title
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          t=p.read_text(encoding='utf-8')
+          pattern=r'<p id="appSubtitle" class="subtitle"[^>]*>[^<]*</p>'
+          matches=re.findall(pattern,t)
+          assert len(matches)==1, f'Expected exactly one title subtitle element, got {len(matches)}'
+          replacement='<p id="appSubtitle" class="subtitle" hidden style="display:none!important" aria-hidden="true"></p>'
+          t=re.sub(pattern,lambda _:replacement,t,count=1)
+          # Keep existing element for JS compatibility, but hide it permanently.
+          assert replacement in t
+          assert '<h1 id="appTitle">' in t
+          assert 'epic-mode-flow-v3256.js' in t
+          assert 'epic-supabase-transport.js' in t
+          t=t.replace('public-screen-layout-v3257.css?v=3.2.57','public-screen-layout-v3257.css?v=3.2.60')
+          t=t.replace('const APP_VERSION="3.2.59";','const APP_VERSION="3.2.60";',1)
+          p.write_text(t,encoding='utf-8')
+          print('OK: scenario title remains; #appSubtitle is empty and hidden in Narracion and Epic')
+      - name: Commit and publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Hide scenario header subtitle in narration and epic modes v3.2.60"
+          git pull --rebase origin main
+          git push
