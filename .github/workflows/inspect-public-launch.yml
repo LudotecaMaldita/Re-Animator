@@ -1,0 +1,23 @@
+name: Inspect public-screen launch
+on:
+  push:
+    paths: [".github/workflows/inspect-public-launch.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect relevant implementation
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          c=Path('index.html').read_text()
+          for term in ['openScreenBtn','buildPublicAccessUrl','openPublicScreen','ensureHost','publicScreen']:
+            print('\nFIND',term)
+            for m in list(re.finditer(re.escape(term),c))[-10:]:
+              snippet=c[max(0,m.start()-180):m.end()+240].replace('\n',' ')
+              if len(snippet)>500:snippet=snippet[:500]
+              print(snippet)
