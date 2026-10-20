@@ -1,0 +1,21 @@
+name: Inspect player sections and timer
+on:
+  push:
+    paths: [".github/workflows/inspect-player-ui-v3260.yml"]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect HTML classes and timer sync
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          s=Path("index.html").read_text()
+          for key in ['id="quickTimer"','id="timerDisplay"','id="directorQuickbar"','id="publicPlayerPanel"','class="panel global-panel"','class="panel announcement-panel"','class="panel tables-panel"','class="panel outcome-panel"','function renderTimer','function updateTimer','function renderDirector','function renderPublicState','function renderPublicView']:
+            print("LOOKUP",key)
+            for m in list(re.finditer(re.escape(key),s))[:4]:
+              print(s[max(0,m.start()-170):m.end()+270].replace("\n"," "))
