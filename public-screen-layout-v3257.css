@@ -80,3 +80,34 @@ body.mode-screen:not(.table-client) .event-director-settings{display:none!import
 body.mode-screen:not(.table-client) main{display:flex!important;flex-direction:column!important;align-items:stretch!important}
 body.mode-screen:not(.table-client) main>.event-director-only{order:-1!important}
 body.mode-screen:not(.table-client) main>.director-panel{display:none!important}
+
+/* Solución verificada: #directorQuickbar lleva también la clase event-director-only,
+   así que una regla anterior lo convertía accidentalmente en una cuadrícula gigante. */
+body.mode-screen:not(.table-client) #directorQuickbar,
+body.mode-screen:not(.table-client) .director-quickbar#directorQuickbar{
+  display:none!important;
+  visibility:hidden!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+}
+body.mode-screen:not(.table-client) main{
+  display:block!important;
+}
+body.mode-screen:not(.table-client) main>.event-director-only{
+  order:initial!important;
+}
+body.mode-screen:not(.table-client) .director-fold-toggle{
+  display:none!important;
+}
+/* Cuadrícula del tablero real, nunca de la barra rápida. */
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  grid-template-rows:minmax(205px,auto) minmax(250px,auto) minmax(145px,auto)!important;
+  gap:14px!important;
+  width:100%!important;
+  margin-top:0!important;
+}
