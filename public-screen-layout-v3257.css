@@ -449,3 +449,23 @@ html body.mode-screen:not(.table-client) .global-panel :is(h3,h4,.section-title,
   font-size:clamp(18px,1.3vw,24px)!important;
   line-height:1.2!important;
 }
+
+/* Vista pública general (view=general): corrección específica de títulos.
+   Mayor especificidad para prevalecer sobre las reglas históricas. */
+html body.mode-screen.public-general-view:not(.table-client) main .outcome-panel :is(h1,h2,h3,h4,.outcome-title,.result-title),
+html body.mode-screen:not(.table-client):has(main .outcome-panel) main .outcome-panel :is(h1,h2,h3,h4,.outcome-title,.result-title){
+  font-size:clamp(21px,1.65vw,30px)!important;
+  line-height:1.2!important;
+}
+html body.mode-screen.public-general-view:not(.table-client) main .global-panel > .panel-pad > :is(h1,h2,h3,h4),
+html body.mode-screen:not(.table-client) main .global-panel > .panel-pad > :is(h1,h2,h3,h4){
+  font-size:clamp(23px,1.9vw,34px)!important;
+  line-height:1.2!important;
+  width:100%!important;
+  text-align:center!important;
+}
+html body.mode-screen.public-general-view:not(.table-client) main .global-panel :is(h3,h4,.section-title,.list-title),
+html body.mode-screen:not(.table-client) main .global-panel :is(h3,h4,.section-title,.list-title){
+  font-size:clamp(19px,1.35vw,25px)!important;
+  line-height:1.2!important;
+}
