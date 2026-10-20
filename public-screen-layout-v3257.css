@@ -160,3 +160,67 @@ body.mode-screen:not(.table-client) .global-panel .metric-card strong{font-size:
     grid-column:1!important;grid-row:3!important;min-height:0!important
   }
 }
+
+/* Pantalla pública: máxima legibilidad y espacio útil, revisión octubre 2026 */
+body.mode-screen:not(.table-client) .announcement-panel,
+body.mode-screen:not(.table-client) #announcementPanel,
+body.mode-screen:not(.table-client) .public-announcement,
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.announcement-panel{display:none!important}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+  grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;
+  grid-template-rows:minmax(170px,auto) minmax(0,1fr)!important;
+  min-height:calc(100dvh - 125px)!important;
+  height:auto!important;
+  gap:10px!important;
+  align-content:stretch!important;
+}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel,
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+  min-height:max(500px,calc(100dvh - 340px))!important;
+  height:100%!important;
+  overflow:auto!important;
+}
+body.mode-screen:not(.table-client) .outcome-panel .eyebrow,
+body.mode-screen:not(.table-client) .global-panel .eyebrow{
+  font-size:clamp(22px,1.65vw,31px)!important;
+}
+body.mode-screen:not(.table-client) .outcome-panel h2,
+body.mode-screen:not(.table-client) .global-panel h2,
+body.mode-screen:not(.table-client) .outcome-panel h3,
+body.mode-screen:not(.table-client) .global-panel h3{
+  font-size:clamp(32px,3vw,54px)!important;
+  line-height:1.16!important;
+}
+body.mode-screen:not(.table-client) .outcome-panel p,
+body.mode-screen:not(.table-client) .global-panel p,
+body.mode-screen:not(.table-client) .outcome-panel .badge,
+body.mode-screen:not(.table-client) .outcome-panel .condition,
+body.mode-screen:not(.table-client) .outcome-panel .condition *,
+body.mode-screen:not(.table-client) .global-panel .milestone,
+body.mode-screen:not(.table-client) .global-panel .milestone *,
+body.mode-screen:not(.table-client) .global-panel .crisis,
+body.mode-screen:not(.table-client) .global-panel .crisis *,
+body.mode-screen:not(.table-client) .global-panel li{
+  font-size:clamp(23px,1.65vw,33px)!important;
+  line-height:1.38!important;
+}
+body.mode-screen:not(.table-client) .outcome-panel .panel-pad,
+body.mode-screen:not(.table-client) .global-panel .panel-pad{padding:22px 24px!important}
+body.mode-screen:not(.table-client) .global-panel .metric-card span,
+body.mode-screen:not(.table-client) .global-panel .metric-card small{
+  font-size:clamp(20px,1.3vw,27px)!important;
+}
+body.mode-screen:not(.table-client) .global-panel .metric-card strong{
+  font-size:clamp(42px,3.3vw,65px)!important;
+}
+@media(max-width:800px){
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto!important;
+    min-height:0!important;
+  }
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel,
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+    min-height:0!important;height:auto!important;
+  }
+}
