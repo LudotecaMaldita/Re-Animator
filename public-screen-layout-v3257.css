@@ -242,9 +242,9 @@ body.mode-screen:not(.table-client) .global-panel :is(
   [id*="milestone"],[id*="crisis"],[id*="milestones"],[id*="crises"],
   [class*="milestone"],[class*="crisis"],[class*="hito"]
 ){
-  font-size:clamp(19px,1.35vw,27px)!important;
+  font-size:clamp(17px,1.15vw,23px)!important;
   line-height:1.4!important;
 }
 body.mode-screen:not(.table-client) .global-panel :is(
   [id*="milestone"],[id*="crisis"],[class*="milestone"],[class*="crisis"]
-) :is(small,.note,.hint){font-size:clamp(17px,1.1vw,22px)!important}
+) :is(small,.note,.hint){font-size:clamp(15px,.95vw,19px)!important}
