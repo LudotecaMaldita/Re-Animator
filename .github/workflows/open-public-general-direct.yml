@@ -1,0 +1,50 @@
+name: Open public general dashboard directly
+on:
+  push:
+    paths:
+      - ".github/workflows/open-public-general-direct.yml"
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Separate general dashboard from player access
+        shell: python
+        run: |
+          from pathlib import Path
+          import re,subprocess,tempfile
+          p=Path('index.html');s=p.read_text(encoding='utf8')
+          s=s.replace('📺 Abrir pantalla pública ↗','📺 Abrir pantalla general ↗')
+          old='const url=buildPublicAccessUrl(room);\n  if(popup){'
+          new='const url=buildPublicAccessUrl(room)+"&view=general";\n  if(popup){'
+          if old not in s:
+            old='const url=buildPublicAccessUrl(room);\n   if(popup){'
+            new='const url=buildPublicAccessUrl(room)+"&view=general";\n   if(popup){'
+          assert old in s, "Open popup URL marker missing"
+          s=s.replace(old,new,1)
+          old='function initPublicUI(){\n    if(!publicMode())return;const room=requestedRoom();if(room){byId("publicTableGate")?.classList.remove("hidden");connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+          new='function initPublicUI(){\n    if(!publicMode())return;const generalView=new URLSearchParams(location.search).get("view")==="general";document.body.classList.toggle("public-general-view",generalView);const room=requestedRoom();if(room){byId("publicTableGate")?.classList.toggle("hidden",generalView);connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+          if old not in s:
+            old='function initPublicUI(){\n     if(!publicMode())return;const room=requestedRoom();if(room){byId("publicTableGate")?.classList.remove("hidden");connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+            new='function initPublicUI(){\n     if(!publicMode())return;const generalView=new URLSearchParams(location.search).get("view")==="general";document.body.classList.toggle("public-general-view",generalView);const room=requestedRoom();if(room){byId("publicTableGate")?.classList.toggle("hidden",generalView);connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+          if old not in s:
+            old='if(!publicMode())return;const room=requestedRoom();if(room){byId("publicTableGate")?.classList.remove("hidden");connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+            new='if(!publicMode())return;const generalView=new URLSearchParams(location.search).get("view")==="general";document.body.classList.toggle("public-general-view",generalView);const room=requestedRoom();if(room){byId("publicTableGate")?.classList.toggle("hidden",generalView);connectClient()}else{byId("publicTableGate")?.classList.add("hidden")}'
+          assert old in s,"initPublicUI gate not found"
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf8')
+          for i,script in enumerate(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)):
+            if not script.strip():continue
+            x=Path(tempfile.gettempdir())/f'public-general-{i}.js';x.write_text(script)
+            subprocess.run(['node','--check',str(x)],check=True)
+          print("OK: direct general view and JS syntax")
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Open general display directly from Director button"
+          git pull --rebase origin main
+          git push
