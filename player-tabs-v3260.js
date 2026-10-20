@@ -46,11 +46,37 @@
     nav.style.display="none";
     selectTab("data");updateClock();
   }
+  let announcementHome=null;
+  function placeAnnouncement(active){
+    const nav=document.getElementById("lmPlayerMobileNav");
+    const moved=document.getElementById("lmMobileAnnouncement");
+    const panel=document.querySelector("main .event-director-only > .announcement-panel");
+    if(active&&nav){
+      const el=moved||panel;
+      if(!el)return;
+      if(!announcementHome){
+        announcementHome=document.createComment("original announcement position");
+        el.parentNode.insertBefore(announcementHome,el);
+      }
+      el.id="lmMobileAnnouncement";
+      const tabs=nav.querySelector(".lm-player-tabs");
+      if(el.parentNode!==nav)nav.insertBefore(el,tabs);
+      el.style.display="block";
+    }else if(moved&&announcementHome&&announcementHome.parentNode){
+      moved.removeAttribute("id");
+      moved.style.removeProperty("display");
+      announcementHome.parentNode.insertBefore(moved,announcementHome);
+      announcementHome.remove();
+      announcementHome=null;
+    }
+  }
   function tick(){
     init();
     const nav=document.getElementById("lmPlayerMobileNav");
-    if(nav)nav.style.display=mobilePlayer()?"":"none";
-    if(mobilePlayer())updateClock();
+    const active=mobilePlayer();
+    if(nav)nav.style.display=active?"":"none";
+    placeAnnouncement(active);
+    if(active)updateClock();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",tick,{once:true});else tick();
   setInterval(tick,1000);
