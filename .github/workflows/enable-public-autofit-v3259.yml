@@ -1,0 +1,43 @@
+name: Enable public display autofit v3.2.59
+on:
+  push:
+    paths:
+      - ".github/workflows/enable-public-autofit-v3259.yml"
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link autoscaling script and refresh stylesheet
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path("index.html")
+          text=p.read_text(encoding="utf-8")
+          assert Path("public-screen-fit-v3259.js").exists()
+          assert Path("public-screen-layout-v3257.css").exists()
+          assert 'public-screen-layout-v3257.css' in text
+          text,n=re.subn(r'public-screen-layout-v3257\\.css\\?v=[0-9.]+','public-screen-layout-v3257.css?v=3.2.59',text)
+          assert n>=1
+          tag='<script src="public-screen-fit-v3259.js?v=3.2.59"></script>'
+          if tag not in text:
+            assert '</body></html>' in text
+            text=text.replace('</body></html>',tag+'\\n</body></html>',1)
+          text=re.sub(r'const APP_VERSION="3\\.2\\.\\d+";', 'const APP_VERSION="3.2.59";', text, count=1)
+          assert tag in text and 'public-screen-layout-v3257.css?v=3.2.59' in text
+          p.write_text(text,encoding="utf-8")
+          print("Integrated and cache-busted public display resources")
+      - name: JavaScript syntax validation
+        run: node --check public-screen-fit-v3259.js
+      - name: Commit index integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Integrate public display no-scroll auto-fit v3.2.59"
+          git pull --rebase origin main
+          git push
