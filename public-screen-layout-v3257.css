@@ -358,3 +358,17 @@ html body.mode-screen:not(.table-client) .global-panel .metric-card strong{
 
 /* Ocultar subtítulo descriptivo debajo del título principal en TODOS los modos. */
 html body .scenario-panel .scenario-copy{display:none!important}
+
+/* Ajuste específico: títulos secundarios más compactos, indicadores grandes intactos. */
+html body.mode-screen:not(.table-client) .outcome-panel h2,
+html body.mode-screen:not(.table-client) .global-panel h2{
+  font-size:clamp(23px,1.75vw,33px)!important;
+  line-height:1.16!important;
+}
+html body.mode-screen:not(.table-client) .global-panel h3,
+html body.mode-screen:not(.table-client) .global-panel h4,
+html body.mode-screen:not(.table-client) .global-panel .section-title,
+html body.mode-screen:not(.table-client) .global-panel .list-title{
+  font-size:clamp(19px,1.35vw,26px)!important;
+  line-height:1.2!important;
+}
