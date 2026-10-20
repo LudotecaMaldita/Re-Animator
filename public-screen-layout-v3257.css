@@ -111,3 +111,52 @@ body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQu
   width:100%!important;
   margin-top:0!important;
 }
+
+/* Proyección v3.2.58: resultado 1/3 + estado 2/3, sin comunicado. */
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+  grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;
+  grid-template-rows:minmax(180px,auto) minmax(470px,1fr)!important;
+  align-content:stretch!important;
+  min-height:calc(100dvh - 170px)!important;
+}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.timer-panel{
+  grid-column:1/-1!important;grid-row:1!important;
+}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel{
+  grid-column:1!important;grid-row:2!important;
+  min-height:470px!important;overflow:auto!important;
+}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+  grid-column:2!important;grid-row:2!important;
+  min-height:470px!important;overflow:auto!important;
+}
+body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.announcement-panel{
+  display:none!important;
+}
+body.mode-screen:not(.table-client) .outcome-panel .panel-pad,
+body.mode-screen:not(.table-client) .global-panel .panel-pad{padding:18px 20px!important}
+body.mode-screen:not(.table-client) .outcome-panel .eyebrow,
+body.mode-screen:not(.table-client) .global-panel .eyebrow{font-size:clamp(15px,1.1vw,21px)!important;letter-spacing:.08em!important}
+body.mode-screen:not(.table-client) .outcome-panel h2,
+body.mode-screen:not(.table-client) .global-panel h2{font-size:clamp(24px,2vw,38px)!important;line-height:1.2!important}
+body.mode-screen:not(.table-client) .outcome-panel p,
+body.mode-screen:not(.table-client) .global-panel p{font-size:clamp(17px,1.15vw,22px)!important;line-height:1.35!important}
+body.mode-screen:not(.table-client) .outcome-panel .condition,
+body.mode-screen:not(.table-client) .outcome-panel .condition *,
+body.mode-screen:not(.table-client) .global-panel .milestone,
+body.mode-screen:not(.table-client) .global-panel .crisis,
+body.mode-screen:not(.table-client) .global-panel li{font-size:clamp(15px,1.05vw,20px)!important;line-height:1.45!important}
+body.mode-screen:not(.table-client) .global-panel .metric-card span,
+body.mode-screen:not(.table-client) .global-panel .metric-card small{font-size:clamp(14px,.9vw,18px)!important;line-height:1.4!important}
+body.mode-screen:not(.table-client) .global-panel .metric-card strong{font-size:clamp(28px,2.2vw,44px)!important}
+@media(max-width:800px){
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+    grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;min-height:0!important
+  }
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel{
+    grid-column:1!important;grid-row:2!important;min-height:0!important
+  }
+  body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+    grid-column:1!important;grid-row:3!important;min-height:0!important
+  }
+}
