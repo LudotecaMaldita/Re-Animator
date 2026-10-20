@@ -248,3 +248,15 @@ body.mode-screen:not(.table-client) .global-panel :is(
 body.mode-screen:not(.table-client) .global-panel :is(
   [id*="milestone"],[id*="crisis"],[class*="milestone"],[class*="crisis"]
 ) :is(small,.note,.hint){font-size:clamp(15px,.95vw,19px)!important}
+
+/* Lectura equilibrada en pantallas públicas: textos secundarios más compactos. */
+body.mode-screen:not(.table-client) .outcome-panel p,
+body.mode-screen:not(.table-client) .outcome-panel .condition,
+body.mode-screen:not(.table-client) .outcome-panel .condition *,
+body.mode-screen:not(.table-client) .global-panel :is([class*="milestone"],[class*="crisis"],[class*="hito"],[id*="milestone"],[id*="crisis"]) :is(span,small,strong,b,p,div),
+body.mode-screen:not(.table-client) .global-panel :is([class*="milestone"],[class*="crisis"],[class*="hito"],[id*="milestone"],[id*="crisis"]) {
+ font-size:clamp(14px,.95vw,18px)!important;line-height:1.35!important;
+}
+body.mode-screen:not(.table-client) .global-panel :is([class*="milestone"],[class*="crisis"],[id*="milestone"],[id*="crisis"]) :is(small,.note,.hint){font-size:clamp(13px,.8vw,16px)!important}
+body.mode-screen:not(.table-client) .global-panel .metric-card span,
+body.mode-screen:not(.table-client) .global-panel .metric-card small{font-size:clamp(14px,.9vw,18px)!important}
