@@ -67,3 +67,16 @@ body.mode-screen:not(.table-client) .timer-panel .timer-bar span{
   body.mode-screen:not(.table-client) .event-director-only>.announcement-panel{grid-column:1!important;grid-row:4!important}
   body.mode-screen:not(.table-client) .timer-panel .timer-bar{height:30px!important}
 }
+
+/* Corrección de jerarquía: ocultar el acordeón del Director en pantalla pública. */
+body.mode-screen:not(.table-client) .director-quickbar,
+body.mode-screen:not(.table-client) .director-accordion,
+body.mode-screen:not(.table-client) .director-sections,
+body.mode-screen:not(.table-client) .director-control,
+body.mode-screen:not(.table-client) .event-controls,
+body.mode-screen:not(.table-client) .event-setup,
+body.mode-screen:not(.table-client) .event-toolbar,
+body.mode-screen:not(.table-client) .event-director-settings{display:none!important}
+body.mode-screen:not(.table-client) main{display:flex!important;flex-direction:column!important;align-items:stretch!important}
+body.mode-screen:not(.table-client) main>.event-director-only{order:-1!important}
+body.mode-screen:not(.table-client) main>.director-panel{display:none!important}
