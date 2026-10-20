@@ -71,20 +71,65 @@ function syncPreparationGate(){
  const main=document.querySelector('main');
  const create=document.getElementById('newEventBtn');
  if(!main||!create)return;
- const waiting=document.body.classList.contains('mode-director')&&document.body.dataset.lmEpicCreated!=='yes';
- const section=[...main.children].find(child=>child.contains(create));
- if(!section)return;
- for(const child of main.children){
-  if(child===section){
-   child.style.removeProperty('display');
-  }else if(waiting){
-   if(!child.hasAttribute('data-lm-before-event-display'))child.setAttribute('data-lm-before-event-display',child.style.display||'');
-   child.style.setProperty('display','none','important');
-  }else if(child.hasAttribute('data-lm-before-event-display')){
-   const original=child.getAttribute('data-lm-before-event-display');
-   if(original)child.style.display=original;else child.style.removeProperty('display');
-   child.removeAttribute('data-lm-before-event-display');
+ const director=document.body.classList.contains('mode-director');
+ const waiting=director&&document.body.dataset.lmEpicCreated!=='yes';
+ const preparation=create.closest('section,.panel,article,details,.director-section')||create.parentElement;
+ // No intervenir en la pantalla general, narración ni jugadores.
+ if(!director){
+  for(const element of document.querySelectorAll('[data-lm-gate-hidden]')){
+   element.style.removeProperty('display');
+   element.removeAttribute('data-lm-gate-hidden');
   }
+  return;
+ }
+ // No ocultar el contenedor principal: contiene todos los paneles del Director.
+ const sections=[...main.querySelectorAll('section,.panel,article,details,.director-section')]
+  .filter(node=>!node.querySelector('section,.panel,article,details,.director-section'));
+ const candidates=[...new Set([preparation,...sections])].filter(Boolean);
+ for(const node of candidates){
+  if(node===main||node.contains(preparation)&&node!==preparation)continue;
+  const hide=waiting?node!==preparation:node===preparation;
+  if(hide){
+   node.style.setProperty('display','none','important');
+   node.setAttribute('data-lm-gate-hidden','');
+  }else if(node.hasAttribute('data-lm-gate-hidden')){
+   node.style.removeProperty('display');
+   node.removeAttribute('data-lm-gate-hidden');
+  }
+ }
+ if(!waiting)orderDirectorPanels(main);
+}
+function orderDirectorPanels(main){
+ const names=[
+  'tiempo de juego','seguimiento','recepción de informes','reserva de dosis',
+  'estado global','hitos globales','comunicado global','resultado épico'
+ ];
+ const normalize=s=>(s||'').toLocaleLowerCase('es').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/\\s+/g,' ').trim();
+ const indexOf=s=>names.findIndex(name=>normalize(s).includes(normalize(name)));
+ // Buscar bloques de contenido, no sus títulos aislados ni la cuadrícula exterior.
+ const nodes=[...main.querySelectorAll('section,.panel,article,details,.director-section')];
+ const identified=[];
+ for(const node of nodes){
+  const heading=node.querySelector('h1,h2,h3,h4,.eyebrow,summary,.section-title');
+  if(!heading)continue;
+  const index=indexOf(heading.textContent);
+  if(index<0)continue;
+  if(nodes.some(inner=>inner!==node&&node.contains(inner)&&indexOf(inner.querySelector('h1,h2,h3,h4,.eyebrow,summary,.section-title')?.textContent)===index))continue;
+  identified.push({node,index});
+ }
+ // Mover solamente bloques hermanos; nunca deshacer la estructura de otro panel.
+ const parents=new Map();
+ for(const item of identified){
+  const parent=item.node.parentElement;
+  if(!parents.has(parent))parents.set(parent,[]);
+  parents.get(parent).push(item);
+ }
+ for(const [parent,items] of parents){
+  if(items.length<2)continue;
+  const sorted=[...items].sort((a,b)=>a.index-b.index);
+  const anchors=items.map(x=>x.node);
+  const end=anchors[anchors.length-1].nextSibling;
+  for(const item of sorted)parent.insertBefore(item.node,end);
  }
 }
 window.LMEpicSetupGate=syncPreparationGate;
