@@ -372,3 +372,62 @@ html body.mode-screen:not(.table-client) .global-panel .list-title{
   font-size:clamp(19px,1.35vw,26px)!important;
   line-height:1.2!important;
 }
+
+/* Proyección compacta: recuperar superficie útil y evitar barras de desplazamiento. */
+@media(min-width:801px){
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+   grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;
+   grid-template-rows:minmax(118px,auto) minmax(0,1fr)!important;
+   height:calc(100dvh - 114px)!important;
+   min-height:0!important;
+   max-height:none!important;
+   overflow:hidden!important;
+   gap:9px!important;
+ }
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.timer-panel{
+   min-height:0!important;
+ }
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel,
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+   min-height:0!important;height:100%!important;
+   overflow:hidden!important;scrollbar-width:none!important;
+ }
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel::-webkit-scrollbar,
+ html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel::-webkit-scrollbar{display:none!important}
+ html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel)>.panel-pad{
+   box-sizing:border-box!important;
+   height:auto!important;
+   padding:12px 15px!important;
+   transform-origin:top left!important;
+ }
+ html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) .eyebrow{
+   font-size:clamp(16px,1.05vw,21px)!important;
+   line-height:1.16!important;
+ }
+ html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) :is(h2,h3){
+   font-size:clamp(26px,1.95vw,35px)!important;
+   line-height:1.14!important;
+ }
+ html body.mode-screen:not(.table-client) .outcome-panel :is(p,li,small,span,.condition,.note),
+ html body.mode-screen:not(.table-client) .outcome-panel .condition *,
+ html body.mode-screen:not(.table-client) .global-panel :is(p,li,small,span,.note),
+ html body.mode-screen:not(.table-client) .global-panel :is([class*="milestone"],[class*="crisis"],[class*="hito"],[id*="milestone"],[id*="crisis"]),
+ html body.mode-screen:not(.table-client) .global-panel :is([class*="milestone"],[class*="crisis"],[class*="hito"],[id*="milestone"],[id*="crisis"]) :is(div,span,small,strong,b,p){
+   font-size:clamp(16px,1.12vw,21px)!important;
+   line-height:1.22!important;
+ }
+ html body.mode-screen:not(.table-client) .global-panel .metric-card :is(span,small){
+   font-size:clamp(14px,.94vw,18px)!important;
+   line-height:1.18!important;
+ }
+ html body.mode-screen:not(.table-client) .global-panel .metric-card strong{
+   font-size:clamp(30px,2.3vw,45px)!important;
+   line-height:1.08!important;
+ }
+ html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) :is(.metric-card,.condition){
+   margin-block:3px!important;
+ }
+ html body.mode-screen:not(.table-client) section.panel.announcement-panel{
+   display:none!important;visibility:hidden!important;
+ }
+}
