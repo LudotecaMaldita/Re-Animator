@@ -34,24 +34,25 @@ jobs:
             await page.waitForTimeout(2000);
             const report=await page.evaluate(()=>{
               const body=document.body;
-              body.classList.add('mode-screen','public-general-view');
-              body.classList.remove('mode-director','table-client');
+              const initialClass=body.className;
               const q=s=>document.querySelector(s);
               const stat=el=>el?{display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility,rect:Math.round(el.getBoundingClientRect().width)+'x'+Math.round(el.getBoundingClientRect().height),fontSize:getComputedStyle(el).fontSize}:null;
               const ann=q('section.panel.announcement-panel');
               const outcome=q('main .outcome-panel');
               const global=q('main .global-panel');
               const stylesheet=[...document.querySelectorAll('link[rel=stylesheet]')].map(x=>({url:x.href,sheet:!!x.sheet}));
-              return {bodyClass:body.className,announcement:stat(ann),eventTitle:q('#announcementTitle')?.textContent,result:stat(outcome),state:stat(global),resultHeading:stat(outcome?.querySelector('h2')),resultDetail:stat(outcome?.querySelector('p:not(.eyebrow)')),stateHeading:stat(global?.querySelector('h2')),stateDetail:stat(global?.querySelector('p:not(.eyebrow)')),css:stylesheet};
+              return {initialClass,bodyClass:body.className,announcement:stat(ann),eventTitle:q('#announcementTitle')?.textContent,result:stat(outcome),state:stat(global),resultHeading:stat(outcome?.querySelector('h2')),resultDetail:stat(outcome?.querySelector('p:not(.eyebrow)')),stateHeading:stat(global?.querySelector('h2')),stateDetail:stat(global?.querySelector('p:not(.eyebrow)')),css:stylesheet};
             });
             console.log('LIVE PUBLIC SCREEN',JSON.stringify({status:res.status(),report},null,2));
             await browser.close();
+            if(!report.bodyClass.includes('mode-screen'))process.exit(4);
             if(!report.announcement||report.announcement.display!=='none')process.exit(5);
             if(!report.result||!report.state)process.exit(6);
             const a=parseInt(report.result.rect),b=parseInt(report.state.rect);
             if(b<a*1.6)process.exit(7);
             if(report.resultHeading&&parseInt(report.resultHeading.fontSize)<30)process.exit(8);
-            console.log('LIVE_PUBLIC_VERIFIED');
+            if(!report.css.some(c=>c.url.includes('public-screen-layout-v3257.css?v=3.2.61')&&c.sheet))process.exit(9);
+            console.log('LIVE_PUBLIC_VERIFIED_V3261');
           })().catch(e=>{console.error(e);process.exit(2)})
           NODE
           node /tmp/lm-public-test/verify.cjs
