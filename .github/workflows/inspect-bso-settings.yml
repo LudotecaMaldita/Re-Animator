@@ -1,0 +1,31 @@
+name: Inspect BSO and Settings for volume
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-bso-settings.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print bounded BSO and settings snippets
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          patterns={
+            'BSO manager':r'LMIntegratedBso',
+            'Audio BSO':r'bsoAudio|bsoPlayer|bsoTrack|integratedBso|bsoGain|bsoVolume',
+            'Settings UI':r'id="settingsOverlay"|id="appSettingsBtn"|id="settingsShell"|settings-overlay|settings-mount',
+            'Volume':r'\.volume\s*=|audio\.volume|musicVolume',
+            'BSO methods':r'function\s+(?:playIntegratedBso|applyBso|setBso|updateBso|createBso)',
+          }
+          for label,p in patterns.items():
+            matches=list(re.finditer(p,t,re.I))
+            print('===',label,'MATCHES',len(matches))
+            for m in matches[:16]:
+              start=max(0,m.start()-270);end=min(len(t),m.end()+450)
+              print('AT',m.start(),repr(t[start:end]))
