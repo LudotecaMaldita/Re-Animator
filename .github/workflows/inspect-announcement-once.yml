@@ -1,0 +1,22 @@
+name: Inspect announcement markup
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-announcement-once.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: python
+        run: |
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf8')
+          for token in ['Evento preparado','Comunicado Global','announcement-panel','event-director-only','public-general-view']:
+            print('CHECK',token)
+            m=list(re.finditer(re.escape(token),s,re.I))
+            for x in m[-8:]:
+              print(s[max(0,x.start()-220):x.end()+230].replace('\n',' ')[:550])
