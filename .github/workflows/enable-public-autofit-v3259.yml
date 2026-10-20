@@ -20,13 +20,13 @@ jobs:
           assert Path("public-screen-fit-v3259.js").exists()
           assert Path("public-screen-layout-v3257.css").exists()
           assert 'public-screen-layout-v3257.css' in text
-          text,n=re.subn(r'public-screen-layout-v3257\\.css\\?v=[0-9.]+','public-screen-layout-v3257.css?v=3.2.59',text)
+          text,n=re.subn(r'public-screen-layout-v3257[.]css[?]v=[0-9.]+','public-screen-layout-v3257.css?v=3.2.59',text)
           assert n>=1
           tag='<script src="public-screen-fit-v3259.js?v=3.2.59"></script>'
           if tag not in text:
             assert '</body></html>' in text
             text=text.replace('</body></html>',tag+'\\n</body></html>',1)
-          text=re.sub(r'const APP_VERSION="3\\.2\\.\\d+";', 'const APP_VERSION="3.2.59";', text, count=1)
+          text=re.sub(r'const APP_VERSION="3[.]2[.][0-9]+";', 'const APP_VERSION="3.2.59";', text, count=1)
           assert tag in text and 'public-screen-layout-v3257.css?v=3.2.59' in text
           p.write_text(text,encoding="utf-8")
           print("Integrated and cache-busted public display resources")
