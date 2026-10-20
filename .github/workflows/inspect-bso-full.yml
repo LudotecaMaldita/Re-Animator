@@ -1,0 +1,25 @@
+name: Inspect BSO full section
+on:
+  push:
+    paths:
+      - ".github/workflows/inspect-bso-full.yml"
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print BSO class and settings wiring
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text(encoding='utf-8')
+          a=t.find('class IntegratedScenarioBso')
+          b=t.find('window.LMIntegratedBso=new',a)
+          print('=== INTEGRATED BSO CLASS, LENGTH',b-a)
+          print(t[a:b+120])
+          for match in list(re.finditer(r'(id="scenarioBsoEnabled"|id="narratorSettingsPanel"|function openAppSettings\(|function closeAppSettings\(|openAppSettings\(\)|<script src="epic-mode-flow)',t))[:15]:
+            i=match.start()
+            print('=== MARKER',i, '===',repr(t[max(0,i-550):i+1250]))
