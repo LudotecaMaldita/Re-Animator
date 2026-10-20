@@ -3124,6 +3124,52 @@ directorTimer=setInterval(timerTick,1000);
 
 
 <script src="epic-mode-flow-v3256.js?v=3.2.56"></script>
-<link rel="stylesheet" href="public-screen-layout-v3257.css?v=3.2.57">
+<link rel="stylesheet" href="public-screen-layout-v3257.css?v=3.2.61">
 <script src="player-tabs-v3260.js?v=3.2.60"></script>
+<style id="lm-public-fix-3261">
+/* Never hide the Director's announcement, only the public projection. */
+html body.mode-screen:not(.table-client) section.panel.announcement-panel,
+html body.mode-screen.public-general-view section.panel.announcement-panel,
+html body.mode-screen:not(.table-client) section:has(#announcementTitle) {
+  display:none!important;visibility:hidden!important;
+  position:absolute!important;width:0!important;height:0!important;
+  min-width:0!important;min-height:0!important;overflow:hidden!important;
+  padding:0!important;margin:0!important;border:0!important;
+}
+html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;
+  grid-template-rows:minmax(155px,auto) minmax(0,1fr)!important;
+  min-height:calc(100dvh - 120px)!important;
+  gap:10px!important;
+}
+html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel{
+  grid-column:1!important;grid-row:2!important;
+  min-height:calc(100dvh - 330px)!important;overflow:auto!important;
+}
+html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+  grid-column:2!important;grid-row:2!important;
+  min-height:calc(100dvh - 330px)!important;overflow:auto!important;
+}
+html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) :is(p,li,span,small,.note,.condition,.condition *,[class*="milestone"],[class*="crisis"],[class*="hito"]){
+  font-size:clamp(22px,1.55vw,32px)!important;line-height:1.4!important;
+}
+html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) :is(h2,h3){
+  font-size:clamp(38px,3.15vw,62px)!important;line-height:1.18!important;
+}
+html body.mode-screen:not(.table-client) :is(.outcome-panel,.global-panel) .eyebrow{
+  font-size:clamp(24px,1.8vw,35px)!important;
+}
+@media(max-width:800px){
+  html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar){
+    grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;
+    min-height:0!important;
+  }
+  html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.outcome-panel{
+    grid-column:1!important;grid-row:2!important;min-height:0!important;
+  }
+  html body.mode-screen:not(.table-client) main>div.event-director-only:not(#directorQuickbar)>.global-panel{
+    grid-column:1!important;grid-row:3!important;min-height:0!important;
+  }
+}
+</style>
 </body></html>
