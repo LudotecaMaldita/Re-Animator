@@ -33,6 +33,32 @@
       }
     }
   }
+  // Centrar respecto al rectángulo de la caja derecha, no al viewport.
+  function centerGlobalPanelTitles(){
+    const panel=document.querySelector("main>div.event-director-only:not(#directorQuickbar)>.global-panel");
+    if(!panel)return;
+    const titleNames=new Set(["estado global","laboratorio central"]);
+    const walker=document.createTreeWalker(panel,NodeFilter.SHOW_TEXT);
+    const found=new Set();
+    let node;
+    while((node=walker.nextNode())){
+      if(!titleNames.has((node.nodeValue||"").replace(/\\s+/g," ").trim().toLocaleLowerCase("es")))continue;
+      let el=node.parentElement;
+      if(!el||found.has(el))continue;
+      found.add(el);
+      el.style.setProperty("width","max-content","important");
+      el.style.setProperty("max-width","100%","important");
+      el.style.setProperty("display","block","important");
+      el.style.setProperty("margin-left","0","important");
+      el.style.setProperty("margin-right","0","important");
+      el.style.setProperty("text-align","center","important");
+      el.style.setProperty("transform","none","important");
+      const box=panel.getBoundingClientRect();
+      const title=el.getBoundingClientRect();
+      const delta=(box.left+box.width/2)-(title.left+title.width/2);
+      el.style.setProperty("transform",`translateX(${delta.toFixed(2)}px)`,"important");
+    }
+  }
   function update(){
     pending=false;
     if(!publicScreen())return;
@@ -53,6 +79,7 @@
       content.style.zoom=ratio.toFixed(3);
       panel.style.overflow="hidden";
     }
+    centerGlobalPanelTitles();
   }
   function schedule(){
     if(!pending){
