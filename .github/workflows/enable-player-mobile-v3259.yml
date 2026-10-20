@@ -1,0 +1,35 @@
+name: Enable optimized mobile player view
+on:
+  push:
+    paths: [".github/workflows/enable-player-mobile-v3259.yml"]
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Insert player-only CSS
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html");s=p.read_text(encoding="utf-8")
+          tag='<link rel="stylesheet" href="player-mobile-v3259.css?v=3.2.59">'
+          assert Path('player-mobile-v3259.css').exists()
+          assert 'epic-supabase-transport.js' in s
+          assert 'public-screen-layout-v3257.css' in s
+          if tag not in s:
+            assert '</head>' in s
+            s=s.replace('</head>',tag+'\n</head>',1)
+          p.write_text(s,encoding='utf-8')
+          assert s.count(tag)==1
+          print("OK: mobile player stylesheet included without modifying Director JS")
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet;then exit 0;fi
+          git commit -m "Enable mobile-optimized epic player UI"
+          git pull --rebase origin main
+          git push
