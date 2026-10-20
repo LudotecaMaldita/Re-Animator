@@ -1,0 +1,40 @@
+name: Publish public syringe dashboard v3.2.57
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-public-syringe-v3257.yml"
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable panoramic public screen layout
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          t=p.read_text(encoding="utf-8")
+          link='<link rel="stylesheet" href="public-screen-layout-v3257.css?v=3.2.57">'
+          assert Path('public-screen-layout-v3257.css').exists()
+          assert '</body></html>' in t
+          if link not in t:t=t.replace('</body></html>',link+'\n</body></html>',1)
+          t=t.replace('const APP_VERSION="3.2.56";','const APP_VERSION="3.2.57";',1)
+          t=t.replace('<span>v3.2.56 · Fanmade · Ludoteca Maldita</span>','<span>v3.2.57 · Fanmade · Ludoteca Maldita</span>',1)
+          t=t.replace('Aplicación v3.2.56<br>','Aplicación v3.2.57<br>',1)
+          assert link in t
+          assert 'const APP_VERSION="3.2.57";' in t
+          assert 'epic-mode-flow-v3256.js' in t
+          assert 'epic-supabase-transport.js' in t
+          p.write_text(t,encoding="utf-8")
+          print("PUBLIC DASHBOARD LAYOUT OK")
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish public panoramic syringe layout v3.2.57"
+          git pull --rebase origin main
+          git push
