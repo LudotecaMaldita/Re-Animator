@@ -188,6 +188,20 @@ function enforceDirectorLayout(){
  for(const {p,i} of ordered)p.style.setProperty('order',String(i+1),'important');
 }
 setInterval(enforceDirectorLayout,400);
+
+function hideGlobalAnnouncementNarrator(){
+  if(!document.body.classList.contains('mode-director'))return;
+  const panel=document.querySelector('main .announcement-panel');
+  if(!panel)return;
+  for(const node of panel.querySelectorAll('*')){
+    if(node.children.length)continue;
+    if((node.textContent||'').trim()==='Narrador del comunicado global'){
+      node.hidden=true;
+      node.style.display='none';
+    }
+  }
+}
+setInterval(hideGlobalAnnouncementNarrator,800);
 window.LMEpicSetupGate=syncPreparationGate;
 setInterval(syncPreparationGate,500);
 function publish(){
