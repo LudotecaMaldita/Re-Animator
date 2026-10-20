@@ -71,6 +71,34 @@
       target.style.setProperty("display","none","important");
     }
   }
+  // Ajustes exclusivos del bloque izquierdo de Resultado épico.
+  function adjustOutcomePanel(){
+    const panel=document.querySelector("main>div.event-director-only:not(#directorQuickbar)>.outcome-panel");
+    if(!panel)return;
+    const normalized=s=>(s||"").replace(/\\s+/g," ").trim().toLocaleLowerCase("es");
+    for(const el of panel.querySelectorAll("*")){
+      if(el.children.length && [...el.children].some(child=>normalized(child.textContent)===normalized(el.textContent)))continue;
+      const label=normalized(el.textContent);
+      if(label==="en curso"){
+        const badge=el.closest(".badge,.pill,.chip,.status,.status-badge,.status-pill");
+        const target=badge&&panel.contains(badge)?badge:el;
+        target.style.setProperty("display","none","important");
+      }
+      if(label==="resultado épico"||label==="fracaso · la muerte ha sido vencida"){
+        el.style.setProperty("display","block","important");
+        el.style.setProperty("width","max-content","important");
+        el.style.setProperty("max-width","100%","important");
+        el.style.setProperty("margin-left","0","important");
+        el.style.setProperty("margin-right","0","important");
+        el.style.setProperty("text-align","center","important");
+        el.style.setProperty("transform","none","important");
+        const box=panel.getBoundingClientRect();
+        const bounds=el.getBoundingClientRect();
+        const offset=box.left+box.width/2-bounds.left-bounds.width/2;
+        el.style.setProperty("transform",`translateX(${offset.toFixed(2)}px)`,"important");
+      }
+    }
+  }
   function update(){
     pending=false;
     if(!publicScreen())return;
@@ -93,6 +121,7 @@
       panel.style.overflow="hidden";
     }
     centerGlobalPanelTitles();
+    adjustOutcomePanel();
   }
   function schedule(){
     if(!pending){
