@@ -59,10 +59,23 @@
       el.style.setProperty("transform",`translateX(${delta.toFixed(2)}px)`,"important");
     }
   }
+  // Ocultar el indicador «Preparado» situado bajo el contador público.
+  function hideReadyBox(){
+    const timer=document.querySelector("main>div.event-director-only:not(#directorQuickbar)>.timer-panel");
+    if(!timer)return;
+    for(const el of timer.querySelectorAll("*")){
+      if(el.children.length)continue;
+      if((el.textContent||"").trim().toLocaleLowerCase("es")!=="preparado")continue;
+      const badge=el.closest(".badge,.pill,.chip,.status,.status-badge,.status-pill,.ready-box");
+      const target=badge&&timer.contains(badge)?badge:el;
+      target.style.setProperty("display","none","important");
+    }
+  }
   function update(){
     pending=false;
     if(!publicScreen())return;
     adjustGeneralTitles();
+    hideReadyBox();
     for(const type of ["outcome-panel","global-panel"]){
       const panel=document.querySelector("main>div.event-director-only:not(#directorQuickbar)>."+type);
       if(!panel||panel.offsetParent===null)continue;
