@@ -1,0 +1,43 @@
+name: Enable mobile player tabs and announcement
+on:
+  push:
+    paths:
+      - ".github/workflows/enable-player-tabs-v3260.yml"
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link mobile player tabs after main app
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path("index.html")
+          s=p.read_text(encoding="utf-8")
+          css='<link rel="stylesheet" href="player-tabs-v3260.css?v=3.2.60">'
+          js='<script src="player-tabs-v3260.js?v=3.2.60"></script>'
+          assert Path("player-tabs-v3260.css").exists()
+          assert Path("player-tabs-v3260.js").exists()
+          assert "player-mobile-v3259.css" in s
+          if css not in s:
+            assert "</head>" in s
+            s=s.replace("</head>",css+"\n</head>",1)
+          if js not in s:
+            assert "</body></html>" in s
+            s=s.replace("</body></html>",js+"\n</body></html>",1)
+          assert s.count(css)==1 and s.count(js)==1
+          p.write_text(s,encoding="utf-8")
+          print("OK: mobile player two tabs, timer, global announcement loaded")
+      - name: Validate JavaScript syntax
+        run: node --check player-tabs-v3260.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Enable mobile player status and data tabs"
+          git pull --rebase origin main
+          git push
