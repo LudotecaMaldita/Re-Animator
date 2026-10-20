@@ -232,3 +232,19 @@ body.mode-screen:not(.table-client) .global-panel .eyebrow,
 body.mode-screen:not(.table-client) .global-panel h2{
   text-align:center!important;
 }
+
+/* Legibilidad de Hitos y Crisis globales en la Pantalla Pública. */
+body.mode-screen:not(.table-client) .global-panel :is(
+  [id*="milestone"],[id*="crisis"],[id*="milestones"],[id*="crises"],
+  [class*="milestone"],[class*="crisis"],[class*="hito"]
+) :is(span,small,strong,b,p,div),
+body.mode-screen:not(.table-client) .global-panel :is(
+  [id*="milestone"],[id*="crisis"],[id*="milestones"],[id*="crises"],
+  [class*="milestone"],[class*="crisis"],[class*="hito"]
+){
+  font-size:clamp(19px,1.35vw,27px)!important;
+  line-height:1.4!important;
+}
+body.mode-screen:not(.table-client) .global-panel :is(
+  [id*="milestone"],[id*="crisis"],[class*="milestone"],[class*="crisis"]
+) :is(small,.note,.hint){font-size:clamp(17px,1.1vw,22px)!important}
