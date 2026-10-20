@@ -469,3 +469,17 @@ html body.mode-screen:not(.table-client) main .global-panel :is(h3,h4,.section-t
   font-size:clamp(19px,1.35vw,25px)!important;
   line-height:1.2!important;
 }
+
+/* Vista general: centrar los dos encabezados de Estado global,
+   independientemente de la disposición interna del panel. */
+html body.mode-screen:not(.table-client) main .global-panel .eyebrow,
+html body.mode-screen:not(.table-client) main .global-panel h2{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  text-align:center!important;
+  align-self:center!important;
+}
