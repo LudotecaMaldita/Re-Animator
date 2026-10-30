@@ -241,7 +241,7 @@
     body.mode-director.lm-epic-created .event-setup-panel,
     body.mode-director.lm-epic-created main>.scenario-panel,
     body.mode-director.lm-epic-created main>.audio-only,
-    body.mode-director.lm-epic-created .timer-panel{display:none!important}
+    body.mode-director.lm-epic-created .timer-panel{display:block!important;order:-1!important}
     body.mode-director main>.event-director-only:not(#directorQuickbar){
       display:flex!important;flex-direction:column!important;gap:14px!important;
     }
